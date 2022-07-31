@@ -24,13 +24,13 @@ class JiraIssueTest {
         customFields.put("customfield_1", "custom");
         final JiraIssue ji = new JiraIssue("GRAYLOG","summary", "desc",
                 "bug", "high", labels, components, "test",
-                "123", customFields);
+                "customfield_123", customFields);
         final String expected = "{"
                 + "\"fields\": {"
                 + "\"project\":{\"key\":\"GRAYLOG\"},"
                 + "\"summary\":\"summary\","
                 + "\"description\":\"desc\","
-                + "\"issueType\":{\"name\":\"bug\"},"
+                + "\"issuetype\":{\"name\":\"bug\"},"
                 + "\"priority\":{\"name\":\"high\"},"
                 + "\"labels\":[\"label\"],"
                 + "\"components\":["

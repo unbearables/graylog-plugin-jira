@@ -64,8 +64,8 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_DESCRIPTION)
     public abstract ValueReference issueDescription();
 
-    @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD_NAME)
-    public abstract ValueReference searchGraylogHashFieldName();
+    @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
+    public abstract ValueReference searchGraylogHashField();
 
     @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
     public abstract ValueReference searchFilterJQL();
@@ -126,8 +126,8 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
         @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_DESCRIPTION)
         public abstract Builder issueDescription(ValueReference issueDescription);
 
-        @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD_NAME)
-        public abstract Builder searchGraylogHashFieldName(ValueReference searchGraylogHashFieldName);
+        @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
+        public abstract Builder searchGraylogHashField(ValueReference searchGraylogHashFieldName);
 
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(ValueReference searchFilterJQL);
@@ -153,7 +153,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
                 .issueCustomFields(issueCustomFields().asString(parameters))
                 .issueSummary(issueSummary().asString(parameters))
                 .issueDescription(issueDescription().asString(parameters))
-                .searchGraylogHashFieldName(searchGraylogHashFieldName().asString(parameters))
+                .searchGraylogHashField(searchGraylogHashField().asString(parameters))
                 .searchFilterJQL(searchFilterJQL().asString(parameters))
                 .build();
     }

@@ -24,11 +24,11 @@ public class JiraIssue {
     private final Set<String> labels;
     private final Set<String> components;
     private final String environment;
-    private final String graylogHashCustomFieldName;
+    private final String graylogHashCustomField;
     private final Map<String, String> customFields;
 
     public JiraIssue(String projectKey, String summary, String description, String issueType, String priority,
-            Set<String> labels, Set<String> components, String environment, String graylogHashCustomFieldName,
+            Set<String> labels, Set<String> components, String environment, String graylogHashCustomField,
             Map<String, String> customFields) {
         this.projectKey = projectKey;
         this.summary = summary;
@@ -38,7 +38,7 @@ public class JiraIssue {
         this.labels = labels;
         this.components = components;
         this.environment = environment;
-        this.graylogHashCustomFieldName = graylogHashCustomFieldName;
+        this.graylogHashCustomField = graylogHashCustomField;
         this.customFields = customFields;
     }
 
@@ -47,7 +47,7 @@ public class JiraIssue {
         params.put("project", ImmutableMap.of("key", projectKey.trim()));
         params.put("summary", summary);
         params.put("description", description);
-        params.put("issueType", ImmutableMap.of("name", issueType.trim()));
+        params.put("issuetype", ImmutableMap.of("name", issueType.trim()));
         if (!Strings.isNullOrEmpty(priority)) {
             params.put("priority", ImmutableMap.of("name", priority.trim()));
         }
@@ -64,12 +64,8 @@ public class JiraIssue {
         }
 
         // Custom fields
-        if (!Strings.isNullOrEmpty(graylogHashCustomFieldName)) {
-            String customFieldName = graylogHashCustomFieldName.trim();
-            if (!Strings.isNullOrEmpty(customFieldName) && !customFieldName.trim().startsWith("customfield_")) {
-                customFieldName = "customfield_" + customFieldName.trim();
-            }
-            params.put(customFieldName, createGraylogHash(description));
+        if (!Strings.isNullOrEmpty(graylogHashCustomField)) {
+            params.put(graylogHashCustomField, createGraylogHash(description));
         }
         customFields.forEach(params::putIfAbsent);
 

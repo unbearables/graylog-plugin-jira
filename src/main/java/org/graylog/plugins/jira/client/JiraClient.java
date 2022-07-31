@@ -96,13 +96,14 @@ public class JiraClient {
     }
 
     private boolean existsDuplicateIssue(final OkHttpClient client, final JiraEventNotificationConfig config) {
-        if (Strings.isNullOrEmpty(config.searchGraylogHashFieldName())) {
+        if (Strings.isNullOrEmpty(config.searchGraylogHashField())) {
             return false;
         }
 
         final String jql = "project = " + config.projectKey()
                 + (!Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " + config.searchFilterJQL() + " " : " ")
-                + "AND \"" + config.searchGraylogHashFieldName() + "\" ~ \"" + JiraIssue.createGraylogHash(config.issueDescription()) + "\"";
+                + "AND \"" + parseGraylogHashField(config.searchGraylogHashField())[1]
+                + "\" ~ \"" + JiraIssue.createGraylogHash(config.issueDescription()) + "\"";
 
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/search").newBuilder()
                 .addQueryParameter("jql", jql)
@@ -153,7 +154,7 @@ public class JiraClient {
                 parseDelimitedValues(config.issueLabels()),
                 parseDelimitedValues(config.issueComponents()),
                 config.issueEnvironment(),
-                config.searchGraylogHashFieldName(),
+                parseGraylogHashField(config.searchGraylogHashField())[0],
                 parseMapValues(config.issueCustomFields())
         );
     }
@@ -182,6 +183,19 @@ public class JiraClient {
             return new HashSet<>();
         }
         return Arrays.stream(delimitedString.split(";")).collect(Collectors.toSet());
+    }
+
+    /**
+     * @return array of custom field id and it's name
+     */
+    private String[] parseGraylogHashField(final String graylogHashField) {
+        if (Strings.isNullOrEmpty(graylogHashField)) {
+            return new String[] {"", ""};
+        }
+        if (!graylogHashField.contains("=")) {
+            throw new JiraClientException("Graylog hash field is incorrectly formed.");
+        }
+        return graylogHashField.split("=", 2);
     }
 
     private Map<String, String> parseMapValues(final String mapString) {

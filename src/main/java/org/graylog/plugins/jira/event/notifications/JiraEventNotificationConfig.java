@@ -30,7 +30,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
 
     // Plugin input fields
     public static final String FIELD_JIRA_URL = "jira_url";
-    public static final String FIELD_PROXY_URL = "jira_proxy_url";
+    public static final String FIELD_PROXY_URL = "proxy_url";
     public static final String FIELD_GRAYLOG_URL = "graylog_url";
     public static final String FIELD_CRED_USERNAME = "cred_username";
     public static final String FIELD_CRED_PWD = "cred_password";
@@ -43,36 +43,36 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     public static final String FIELD_ISSUE_CUSTOM_FIELDS = "issue_custom_fields";
     public static final String FIELD_ISSUE_SUMMARY = "issue_summary";
     public static final String FIELD_ISSUE_DESCRIPTION = "issue_description";
-    public static final String FIELD_SEARCH_GRAYLOG_HASH_FIELD_NAME = "search_graylog_hash_field_name";
+    public static final String FIELD_SEARCH_GRAYLOG_HASH_FIELD = "search_graylog_hash_field";
     public static final String FIELD_SEARCH_FILTER_JQL = "search_filter_jql";
 
     // Default values
     public static final String DEFAULT_ISSUE_SUMMARY = "Graylog log error - ${event.id}";
     public static final String DEFAULT_ISSUE_DESCRIPTION =
-            "# --- [Event Definition] ---------------------------\n" +
-            "**ID:**          ${event_definition_id}  \n" +
-            "**Type:**        ${event_definition_type}  \n" +
-            "**Title:**       ${event_definition_title}  \n" +
-            "**Description:** ${event_definition_description}  \n" +
-            "****# --- [Event] --------------------------------------  \n" +
-            "**Event:**                ${event}\n  " +
-            "****# --- [Event Detail] -------------------------------  \n" +
-            "**Timestamp:**            ${event.timestamp}\n  " +
-            "**Message:**              ${event.message}\n  " +
-            "**Source:**               ${event.source}\n  " +
-            "**Key:**                  ${event.key}\n  " +
-            "**Priority:**             ${event.priority}\n  " +
-            "**Alert:**                ${event.alert}\n  " +
-            "**Timestamp Processing:** ${event.timestamp}\n  " +
-            "**TimeRange Start:**      ${event.timerange_start}\n  " +
-            "**TimeRange End:**        ${event.timerange_end}\n  " +
+            "--- [Event Definition] ---------------------------\n" +
+            "*ID:*          ${event_definition_id}  \n" +
+            "*Type:*        ${event_definition_type}  \n" +
+            "*Title:*       ${event_definition_title}  \n" +
+            "*Description:* ${event_definition_description}  \n" +
+            "--- [Event] --------------------------------------  \n" +
+            "*Event:*                ${event}\n  " +
+            "--- [Event Detail] -------------------------------  \n" +
+            "*Timestamp:*            ${event.timestamp}\n  " +
+            "*Message:*              ${event.message}\n  " +
+            "*Source:*               ${event.source}\n  " +
+            "*Key:*                  ${event.key}\n  " +
+            "*Priority:*             ${event.priority}\n  " +
+            "*Alert:*                ${event.alert}\n  " +
+            "*Timestamp Processing:* ${event.timestamp}\n  " +
+            "*TimeRange Start:*      ${event.timerange_start}\n  " +
+            "*TimeRange End:*        ${event.timerange_end}\n  " +
             "${if event.fields}\n" +
-            "**Fields:**\n  " +
+            "*Fields:*\n  " +
             "${foreach event.fields field}  ${field.key}: ${field.value}  \n" +
             "${end}\n" +
             "${if backlog}\n" +
-            "# --- [Backlog] ------------------------------------  \n" +
-            "**Messages:**  " +
+            "--- [Backlog] ------------------------------------  \n" +
+            "*Messages:*  " +
             "${foreach backlog message}\n" +
             "Graylog link: ${graylog_url}/messages/graylog_0/${message.id}\n" +
             "```\n" +
@@ -130,8 +130,8 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     @NotBlank
     public abstract String issueDescription();
 
-    @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD_NAME)
-    public abstract String searchGraylogHashFieldName();
+    @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
+    public abstract String searchGraylogHashField();
 
     @JsonProperty(FIELD_SEARCH_FILTER_JQL)
     public abstract String searchFilterJQL();
@@ -181,6 +181,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         if (issueDescription().isEmpty()) {
             validation.addError(FIELD_ISSUE_DESCRIPTION, FIELD_ISSUE_DESCRIPTION + " cannot be empty.");
         }
+        if (!searchGraylogHashField().isEmpty() && !searchGraylogHashField().contains("=")) {
+            validation.addError(FIELD_SEARCH_GRAYLOG_HASH_FIELD, FIELD_SEARCH_GRAYLOG_HASH_FIELD + " is incorrectly filled.");
+        }
         return validation;
     }
 
@@ -200,7 +203,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                     .issueCustomFields("")
                     .issueSummary(DEFAULT_ISSUE_SUMMARY)
                     .issueDescription(DEFAULT_ISSUE_DESCRIPTION)
-                    .searchGraylogHashFieldName("")
+                    .searchGraylogHashField("")
                     .searchFilterJQL("");
         }
 
@@ -246,8 +249,8 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonProperty(FIELD_ISSUE_DESCRIPTION)
         public abstract Builder issueDescription(String issueDescription);
 
-        @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD_NAME)
-        public abstract Builder searchGraylogHashFieldName(String searchGraylogHashFieldName);
+        @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
+        public abstract Builder searchGraylogHashField(String searchGraylogHashField);
 
         @JsonProperty(FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(String searchFilterJQL);
@@ -272,7 +275,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                 .issueCustomFields(ValueReference.of(issueCustomFields()))
                 .issueSummary(ValueReference.of(issueSummary()))
                 .issueDescription(ValueReference.of(issueDescription()))
-                .searchGraylogHashFieldName(ValueReference.of(searchGraylogHashFieldName()))
+                .searchGraylogHashField(ValueReference.of(searchGraylogHashField()))
                 .searchFilterJQL(ValueReference.of(searchFilterJQL()))
                 .build();
     }

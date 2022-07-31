@@ -5,32 +5,33 @@ import { Input } from "components/bootstrap";
 import FormsUtils from "util/FormsUtils";
 
 const DEFAULT_ISSUE_SUMMARY = "Graylog log error - ${event.id}"
-const DEFAULT_ISSUE_DESCRIPTION = `# --- [Event Definition] ---------------------------
-**ID:**                   \${event_definition_id}  
-**Type:**                 \${event_definition_type}  
-**Title:**                \${event_definition_title}  t
-**Description:**          \${event_definition_description}  
-# --- [Event] --------------------------------------  
-**Event:**                \${event}  
-# --- [Event Detail] -------------------------------  
-**Timestamp:**            \${event.timestamp}  
-**Message:**              \${event.message}  
-**Source:**               \${event.source}  
-**Key:**                  \${event.key}  
-**Priority:**             \${event.priority}  
-**Alert:**                \${event.alert}  
-**Timestamp Processing:** \${event.timestamp}  
-**TimeRange Start:**      \${event.timerange_start}  
-**TimeRange End:**        \${event.timerange_end}  
+const DEFAULT_ISSUE_DESCRIPTION = `--- [Event Definition] ---------------------------
+*ID:**                  \${event_definition_id}
+*Type:*                 \${event_definition_type}
+*Title:*                \${event_definition_title}  t
+*Description:*          \${event_definition_description}
+--- [Event] --------------------------------------
+*Event:*                \${event}
+--- [Event Detail] -------------------------------
+*Timestamp:*            \${event.timestamp}
+*Message:*              \${event.message}
+*Source:*               \${event.source}
+*Key:*                  \${event.key}
+*Priority:*             \${event.priority}
+*Alert:*                \${event.alert}
+*Timestamp Processing:* \${event.timestamp}
+*TimeRange Start:*      \${event.timerange_start}
+*TimeRange End:*        \${event.timerange_end}
 \${if event.fields}
-**Fields:**  
+*Fields:*
 \${foreach event.fields field}  \${field.key}: \${field.value}  
 \${end}
 \${end}
 \${if backlog}
-# --- [Backlog] ------------------------------------  
-**Messages:**  
+--- [Backlog] ------------------------------------
+*Messages:*
 \${foreach backlog message}
+Graylog link: \${graylog_url}/messages/graylog_0/\${message.id}
 \`\`\`
 \${message}  
 \`\`\`
@@ -264,17 +265,17 @@ class JiraNotificationForm extends React.Component {
           onChange={this.handleChange}
         />
         <Input
-          id="notification-search-graylog-hash-field-name"
-          name="search_graylog_hash_field_name"
-          label="Search for duplicate issues custom field name"
+          id="notification-search-graylog-hash-field"
+          name="search_graylog_hash_field"
+          label="Search for duplicate issues custom field"
           type="text"
-          bsStyle={validation.errors.search_graylog_hash_field_name ? "error" : null}
+          bsStyle={validation.errors.search_graylog_hash_field ? "error" : null}
           help={lodash.get(
             validation,
-            "errors.search_graylog_hash_field_name[0]",
-            "Custom field name e.g. 'Graylog hash'. Leave blank to turn off searching."
+            "errors.search_graylog_hash_field[0]",
+            "Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off searching."
           )}
-          value={config.search_graylog_hash_field_name || ""}
+          value={config.search_graylog_hash_field || ""}
           onChange={this.handleChange}
         />
         <Input

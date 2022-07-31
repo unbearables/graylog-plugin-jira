@@ -21,7 +21,9 @@ Usage
 Create Jira user, that will be used to create issues - this user will be a reporter of these issues.
 
 #### 2. Create custom field for duplicate issue checks (optional)
-Create custom field e.g. `Graylog hash` for easy duplicate issue search. Remember to enable this custom field in create issue screen, also allow Jira user (from #1) to fill it and view it.
+Create custom field e.g. `Graylog hash` for easy duplicate issue search.
+Remember to enable this custom field in create issue screen, also allow Jira user (from #1) to fill it and view it.
+You will need both id of this field (in format `customfield_*`) and name.
 
 #### 3. Create Graylog notification
 Create Graylog notification and choose `Jira Notification` as Notification type.
@@ -29,7 +31,7 @@ Create Graylog notification and choose `Jira Notification` as Notification type.
 #### 4. Configure Jira Notification
 Input your Jira configuration and preferences. Here is a screenshot of configuration example.
 
-![Jira configuraiton](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/configuration.png)
+![Jira configuration](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/configuration.png)
 
 #### 5. Create Graylog Event Definitions
 Create Graylog Event definition and set Jira Notification you created at #4 as its Notification.
@@ -37,7 +39,12 @@ Create Graylog Event definition and set Jira Notification you created at #4 as i
 #### 6. Receive notification
 You will receive notification message like below.
 
-![Jira notification issue](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/issue.png)
+![Jira notification issue](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/example_issue.png)
+
+Configure duplicate search
+--------------------------
+
+Note that this plugin searches for duplicate issue by its description using custom field.
 
 Contribution
 ------------
