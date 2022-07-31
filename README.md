@@ -31,15 +31,13 @@ Create Graylog notification and choose `Jira Notification` as Notification type.
 #### 4. Configure Jira Notification
 Input your Jira configuration and preferences. Here is a screenshot of configuration example.
 
-![Jira configuration](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/configuration.png)
-
 #### 5. Create Graylog Event Definitions
 Create Graylog Event definition and set Jira Notification you created at #4 as its Notification.
 
 #### 6. Receive notification
 You will receive notification message like below.
 
-![Jira notification issue](https://github.com/unbearables/graylog-plugin-jira/blob/main/img/example_issue.png)
+![Jira notification issue](/img/example_issue.png)
 
 Configure duplicate search
 --------------------------
