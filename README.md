@@ -35,7 +35,7 @@ Input your Jira configuration and preferences. Here is a screenshot of configura
 Create Graylog Event definition and set Jira Notification you created at #4 as its Notification.
 
 #### 6. Receive notification
-You will receive notification message like below.
+An issue like below will be created.
 
 ![Jira notification issue](/img/example_issue.png)
 
@@ -64,3 +64,8 @@ This project is using Maven 3. Requires Java 8 or higher and `yarn`.
 * Optional: Run `mvn jdeb:jdeb` and `mvn rpm:rpm` to create a DEB and RPM package respectively.
 * Copy generated JAR file in target directory to your Graylog plugin directory.
 * Restart the Graylog.
+
+Inspiration
+-----------
+
+Creation of this plugin was inspired by [Graylog plugin teams](https://github.com/hidapple/graylog-plugin-teams) and [Graylog jira alarmcallback](https://github.com/magicdude4eva/graylog-jira-alarmcallback)
