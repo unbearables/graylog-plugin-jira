@@ -8,8 +8,6 @@ import org.graylog2.plugin.PluginModule;
 import java.util.Collections;
 import java.util.Set;
 
-import static org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig.TYPE_NAME;
-
 public class JiraNotificationModule extends PluginModule {
 
     @Override
@@ -19,7 +17,7 @@ public class JiraNotificationModule extends PluginModule {
 
     @Override
     protected void configure() {
-        addNotificationType(TYPE_NAME, JiraEventNotificationConfig.class, JiraEventNotification.class,
-                JiraEventNotification.Factory.class);
+        addNotificationType(JiraEventNotificationConfig.TYPE_NAME, JiraEventNotificationConfig.class,
+                JiraEventNotification.class, JiraEventNotification.Factory.class);
     }
 }

@@ -75,6 +75,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
     public abstract ValueReference searchFilterJQL();
 
+    @JsonProperty(JiraEventNotificationConfig.FIELD_DUPLICATE_ISSUE_COMMENT)
+    public abstract ValueReference duplicateIssueComment();
+
     public static Builder builder() {
         return Builder.create();
     }
@@ -141,6 +144,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(ValueReference searchFilterJQL);
 
+        @JsonProperty(JiraEventNotificationConfig.FIELD_DUPLICATE_ISSUE_COMMENT)
+        public abstract Builder duplicateIssueComment(ValueReference duplicateIssueComment);
+
         public abstract JiraEventNotificationConfigEntity build();
     }
 
@@ -165,6 +171,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
                 .searchGraylogHashField(searchGraylogHashField().asString(parameters))
                 .searchGraylogHashRegex(searchGraylogHashRegex().asString(parameters))
                 .searchFilterJQL(searchFilterJQL().asString(parameters))
+                .duplicateIssueComment(duplicateIssueComment().asString(parameters))
                 .build();
     }
 }
