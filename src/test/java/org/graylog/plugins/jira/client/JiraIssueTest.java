@@ -38,7 +38,7 @@ class JiraIssueTest {
                 + "  {\"name\":\"component\"}"
                 + "],"
                 + "\"environment\":\"test\","
-                + "\"customfield_123\":\"" + JiraIssue.createGraylogHash(null, "desc") + "\","
+                + "\"customfield_123\":\"" + ji.createGraylogHash() + "\","
                 + "\"customfield_1\":\"custom\""
                 + "}"
                 + "}";
@@ -48,11 +48,16 @@ class JiraIssueTest {
 
     @Test
     void createGraylogHash_success() {
-        final String testValue = "ABC123!";
-        final String noRegex = JiraIssue.createGraylogHash(null, testValue);
-        final String withRegex = JiraIssue.createGraylogHash("\\d+", testValue);
+        final String testDesc = "ABC123!";
 
-        assertNotEquals(noRegex, withRegex);
+        final JiraIssue jiNoRegex = new JiraIssue("GRAYLOG","summary", testDesc,
+                "bug", "high", new HashSet<>(), new HashSet<>(), "test",
+                "customfield_123", null, new HashMap<>());
+        final JiraIssue jiWithRegex = new JiraIssue("GRAYLOG","summary", testDesc,
+                "bug", "high", new HashSet<>(), new HashSet<>(), "test",
+                "customfield_123", "\\d+", new HashMap<>());
+
+        assertNotEquals(jiNoRegex.createGraylogHash(), jiWithRegex.createGraylogHash());
     }
 
     private void assertJSON(final String json1, final String json2) throws IOException {

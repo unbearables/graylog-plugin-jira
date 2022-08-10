@@ -29,6 +29,7 @@ public class JiraIssue {
     private final String graylogHashCustomField;
     private final String graylogHashRegex;
     private final Map<String, String> customFields;
+    private String graylogHash;
 
     public JiraIssue(String projectKey, String summary, String description, String issueType, String priority,
             Set<String> labels, Set<String> components, String environment, String graylogHashCustomField,
@@ -69,7 +70,7 @@ public class JiraIssue {
 
         // Custom fields
         if (!Strings.isNullOrEmpty(graylogHashCustomField)) {
-            params.put(graylogHashCustomField, createGraylogHash(graylogHashRegex, description));
+            params.put(graylogHashCustomField, createGraylogHash());
         }
         customFields.forEach(params::putIfAbsent);
 
@@ -80,7 +81,11 @@ public class JiraIssue {
         }
     }
 
-    public static String createGraylogHash(final String regex, final String string) {
+    public String createGraylogHash() {
+        if (graylogHash != null) {
+            return graylogHash;
+        }
+
         final MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
@@ -89,11 +94,11 @@ public class JiraIssue {
         }
 
         final String value;
-        if (regex == null) {
-            value = string;
+        if (graylogHashRegex == null) {
+            value = description;
         } else {
-            final Pattern pattern = Pattern.compile(regex);
-            final Matcher matcher = pattern.matcher(string);
+            final Pattern pattern = Pattern.compile(graylogHashRegex);
+            final Matcher matcher = pattern.matcher(description);
 
             final StringBuilder sb = new StringBuilder();
             if (matcher.find()) {
@@ -102,10 +107,11 @@ public class JiraIssue {
                     sb.append(matcher.group(i++));
                 } while (i < matcher.groupCount());
             }
-            value = sb.length() > 0 ? sb.toString() : string;
+            value = sb.length() > 0 ? sb.toString() : description;
         }
 
         md.update(value.getBytes(Charset.defaultCharset()));
-        return DatatypeConverter.printHexBinary(md.digest());
+        graylogHash = DatatypeConverter.printHexBinary(md.digest());
+        return graylogHash;
     }
 }

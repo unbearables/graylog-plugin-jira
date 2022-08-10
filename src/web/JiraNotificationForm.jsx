@@ -5,35 +5,35 @@ import { Input } from "components/bootstrap";
 import FormsUtils from "util/FormsUtils";
 
 const DEFAULT_ISSUE_SUMMARY = "Graylog log error - ${event.id}"
-const DEFAULT_ISSUE_DESCRIPTION = `--- [Event Definition] ---------------------------
-*ID:**                  \${event_definition_id}
-*Type:*                 \${event_definition_type}
-*Title:*                \${event_definition_title}  t
-*Description:*          \${event_definition_description}
---- [Event] --------------------------------------
-*Event:*                \${event}
---- [Event Detail] -------------------------------
-*Timestamp:*            \${event.timestamp}
-*Message:*              \${event.message}
-*Source:*               \${event.source}
-*Key:*                  \${event.key}
-*Priority:*             \${event.priority}
-*Alert:*                \${event.alert}
+const DEFAULT_ISSUE_DESCRIPTION = `--- [Event Definition] ---
+*ID:* \${event_definition_id}
+*Type:* \${event_definition_type}
+*Title:* \${event_definition_title}
+*Description:* \${event_definition_description}
+--- [Event] ---
+*Event:* \${event}
+--- [Event Detail] ---
+*Timestamp:* \${event.timestamp}
+*Message:* \${event.message}
+*Source:* \${event.source}
+*Key:* \${event.key}
+*Priority:* \${event.priority}
+*Alert:* \${event.alert}
 *Timestamp Processing:* \${event.timestamp}
-*TimeRange Start:*      \${event.timerange_start}
-*TimeRange End:*        \${event.timerange_end}
+*TimeRange Start:* \${event.timerange_start}
+*TimeRange End:* \${event.timerange_end}
 \${if event.fields}
 *Fields:*
-\${foreach event.fields field}  \${field.key}: \${field.value}  
+\${foreach event.fields field} \${field.key}: \${field.value}
 \${end}
 \${end}
 \${if backlog}
---- [Backlog] ------------------------------------
+--- [Backlog] ---
 *Messages:*
 \${foreach backlog message}
 Graylog link: \${graylog_url}/messages/\${message.index}/\${message.id}
 \`\`\`
-\${message}  
+\${message}
 \`\`\`
 \${end}
 \${end}`;
@@ -273,7 +273,7 @@ class JiraNotificationForm extends React.Component {
           help={lodash.get(
             validation,
             "errors.search_graylog_hash_field[0]",
-            "Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off searching."
+            "Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off duplicate searching."
           )}
           value={config.search_graylog_hash_field || ""}
           onChange={this.handleChange}
@@ -304,6 +304,20 @@ class JiraNotificationForm extends React.Component {
             "Search filter JQL - duplicate filter e.g. 'AND resolution = Unresolved'"
           )}
           value={config.search_filter_jql || ""}
+          onChange={this.handleChange}
+        />
+        <Input
+          id="notification-duplicate-issue-comment"
+          name="duplicate_issue_comment"
+          label="Comment inserted in duplicate found issue"
+          type="textarea"
+          bsStyle={validation.errors.duplicate_issue_comment ? "error" : null}
+          help={lodash.get(
+            validation,
+            "errors.duplicate_issue_comment[0]",
+            "Comment to add to found duplicate issue. Event and message fields are accessible (just like in issue description). Leave blank to disable commenting."
+          )}
+          value={config.duplicate_issue_comment || ""}
           onChange={this.handleChange}
         />
       </React.Fragment>

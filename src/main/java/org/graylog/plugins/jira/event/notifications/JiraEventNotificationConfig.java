@@ -50,33 +50,34 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     public static final String FIELD_SEARCH_GRAYLOG_HASH_FIELD = "search_graylog_hash_field";
     public static final String FIELD_SEARCH_GRAYLOG_HASH_REGEX = "search_graylog_hash_regex";
     public static final String FIELD_SEARCH_FILTER_JQL = "search_filter_jql";
+    public static final String FIELD_DUPLICATE_ISSUE_COMMENT = "duplicate_issue_comment";
 
     // Default values
     public static final String DEFAULT_ISSUE_SUMMARY = "Graylog log error - ${event.id}";
     public static final String DEFAULT_ISSUE_DESCRIPTION =
-            "--- [Event Definition] ---------------------------\n" +
-            "*ID:*          ${event_definition_id}  \n" +
-            "*Type:*        ${event_definition_type}  \n" +
-            "*Title:*       ${event_definition_title}  \n" +
-            "*Description:* ${event_definition_description}  \n" +
-            "--- [Event] --------------------------------------  \n" +
-            "*Event:*                ${event}\n  " +
-            "--- [Event Detail] -------------------------------  \n" +
-            "*Timestamp:*            ${event.timestamp}\n" +
-            "*Message:*              ${event.message}\n" +
-            "*Source:*               ${event.source}\n" +
-            "*Key:*                  ${event.key}\n" +
-            "*Priority:*             ${event.priority}\n" +
-            "*Alert:*                ${event.alert}\n" +
+            "--- [Event Definition] ---\n" +
+            "*ID:* ${event_definition_id}\n" +
+            "*Type:* ${event_definition_type}\n" +
+            "*Title:* ${event_definition_title}\n" +
+            "*Description:* ${event_definition_description}\n" +
+            "--- [Event] ---\n" +
+            "*Event:* ${event}\n" +
+            "--- [Event Detail] ---\n" +
+            "*Timestamp:* ${event.timestamp}\n" +
+            "*Message:* ${event.message}\n" +
+            "*Source:* ${event.source}\n" +
+            "*Key:* ${event.key}\n" +
+            "*Priority:* ${event.priority}\n" +
+            "*Alert:* ${event.alert}\n" +
             "*Timestamp Processing:* ${event.timestamp}\n" +
-            "*TimeRange Start:*      ${event.timerange_start}\n" +
-            "*TimeRange End:*        ${event.timerange_end}\n" +
+            "*TimeRange Start:* ${event.timerange_start}\n" +
+            "*TimeRange End:* ${event.timerange_end}\n" +
             "${if event.fields}\n" +
-            "*Fields:*\n  " +
-            "${foreach event.fields field}  ${field.key}: ${field.value}  \n" +
+            "*Fields:*\n" +
+            "${foreach event.fields field} ${field.key}: ${field.value}\n" +
             "${end}\n" +
             "${if backlog}\n" +
-            "--- [Backlog] ------------------------------------  \n" +
+            "--- [Backlog] ---\n" +
             "*Messages:*\n" +
             "${foreach backlog message}\n" +
             "Graylog link: ${graylog_url}/messages/${message.index}/${message.id}\n" +
@@ -143,6 +144,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
 
     @JsonProperty(FIELD_SEARCH_FILTER_JQL)
     public abstract String searchFilterJQL();
+
+    @JsonProperty(FIELD_DUPLICATE_ISSUE_COMMENT)
+    public abstract String duplicateIssueComment();
 
     public static Builder builder() {
         return Builder.create();
@@ -221,7 +225,8 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                     .issueDescription(DEFAULT_ISSUE_DESCRIPTION)
                     .searchGraylogHashField("")
                     .searchGraylogHashRegex("")
-                    .searchFilterJQL("");
+                    .searchFilterJQL("")
+                    .duplicateIssueComment("");
         }
 
         @JsonProperty(FIELD_JIRA_URL)
@@ -275,6 +280,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonProperty(FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(String searchFilterJQL);
 
+        @JsonProperty(FIELD_DUPLICATE_ISSUE_COMMENT)
+        public abstract Builder duplicateIssueComment(String duplicateIssueComment);
+
         public abstract JiraEventNotificationConfig build();
     }
 
@@ -298,6 +306,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                 .searchGraylogHashField(ValueReference.of(searchGraylogHashField()))
                 .searchGraylogHashRegex(ValueReference.of(searchGraylogHashRegex()))
                 .searchFilterJQL(ValueReference.of(searchFilterJQL()))
+                .duplicateIssueComment(ValueReference.of(duplicateIssueComment()))
                 .build();
     }
 

@@ -3,9 +3,6 @@ package org.graylog.plugins.jira.client;
 import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.unboundid.util.json.JSONException;
-import com.unboundid.util.json.JSONObject;
-import com.unboundid.util.json.JSONValue;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -14,6 +11,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,21 +51,28 @@ public class JiraClient {
             client = new OkHttpClient.Builder().proxy(buildProxy(config.proxyURL())).build();
         }
 
-        if (existsDuplicateIssue(client, config)) {
-            LOG.debug("Duplicate JIRA issue detected - issue will not be created");
-            return;
+        final JiraIssue jiraIssue = createIssueCreationRequest(config, model);
+
+        if (!Strings.isNullOrEmpty(config.searchGraylogHashField())) {
+            final String duplicateIssueId = searchForDuplicateIssue(client, config, jiraIssue);
+            if (duplicateIssueId != null) {
+                LOG.debug("Duplicate JIRA issue detected with {} - issue will not be created", duplicateIssueId);
+                if (!Strings.isNullOrEmpty(config.duplicateIssueComment())) {
+                    addIssueComment(client, config, duplicateIssueId, model);
+                }
+                return;
+            }
         }
 
         // Create issue
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/issue");
-        final RequestBody reqBody = RequestBody.create(MediaType.get("application/json"),
-                createRequest(config, model).toJsonString());
+        final RequestBody reqBody = RequestBody.create(MediaType.get("application/json"), jiraIssue.toJsonString());
         final Request req = new Request.Builder()
                 .url(url)
                 .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
                 .post(reqBody)
                 .build();
-        LOG.debug("Request: " + req);
+        LOG.debug("Request: {}", req);
 
         // Response
         try (final Response res = client.newCall(req).execute()) {
@@ -95,15 +101,15 @@ public class JiraClient {
         return url;
     }
 
-    private boolean existsDuplicateIssue(final OkHttpClient client, final JiraEventNotificationConfig config) {
-        if (Strings.isNullOrEmpty(config.searchGraylogHashField())) {
-            return false;
-        }
-
+    /**
+     * @return ID of first duplicate issue
+     */
+    private String searchForDuplicateIssue(final OkHttpClient client, final JiraEventNotificationConfig config,
+                                           final JiraIssue jiraIssue) {
         final String jql = "project = " + config.projectKey()
-                + (!Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " + config.searchFilterJQL() + " " : " ")
+                + (Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " : " " + config.searchFilterJQL() + " ")
                 + "AND \"" + parseGraylogHashField(config.searchGraylogHashField())[1]
-                + "\" ~ \"" + JiraIssue.createGraylogHash(config.searchGraylogHashRegex(), config.issueDescription()) + "\"";
+                + "\" ~ \"" + jiraIssue.createGraylogHash() + "\"";
 
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/search").newBuilder()
                 .addQueryParameter("jql", jql)
@@ -116,7 +122,7 @@ public class JiraClient {
                 .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
                 .get()
                 .build();
-        LOG.debug("Request: " + req);
+        LOG.debug("Request: {}", req);
 
         try (final Response res = client.newCall(req).execute()) {
             if (res.body() == null) {
@@ -128,13 +134,43 @@ public class JiraClient {
                         + ", response=" + res.body().string());
             }
             final String jsonData = res.body().string();
-            final List<JSONValue> issues = new JSONObject(jsonData).getFieldAsArray("issues");
-
-            return issues != null && !issues.isEmpty();
+            final JSONArray issues = new JSONObject(jsonData).getJSONArray("issues");
+            if (issues != null && !issues.isEmpty()) {
+                return issues.getJSONObject(0).getString("id");
+            }
+            return null; // no duplicates found
         } catch (final IOException ex) {
             throw new JiraClientException("Failed to send GET request to JIRA (issue search).", ex);
         } catch (final JSONException ex) {
             throw new RuntimeException("Failed to read JIRA (issue search) response body.", ex);
+        }
+    }
+
+    private void addIssueComment(final OkHttpClient client, final JiraEventNotificationConfig config,
+            final String issueId, final Map<String, Object> model) {
+        final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/issue/" + issueId + "/comment").newBuilder()
+                .build();
+
+        final RequestBody reqBody = RequestBody.create(MediaType.get("application/json"),
+                "{\"body\":\"" + buildMessage(config.duplicateIssueComment(), model) + "\"}");
+        final Request req = new Request.Builder()
+                .url(url)
+                .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
+                .post(reqBody)
+                .build();
+        LOG.debug("Request: {}", req);
+
+        try (final Response res = client.newCall(req).execute()) {
+            if (res.body() == null) {
+                throw new JiraClientException("Jira (issue comment) returned null body");
+            }
+            if (!res.isSuccessful()) {
+                LOG.debug(res.toString());
+                throw new JiraClientException("Jira (issue comment) returned client error. HTTP Status=" + res.code()
+                        + ", response=" + res.body().string());
+            }
+        } catch (final IOException ex) {
+            throw new JiraClientException("Failed to send POST request to JIRA (issue comment).", ex);
         }
     }
 
@@ -143,7 +179,8 @@ public class JiraClient {
         return "Basic " + new String(Base64.encodeBase64(auth.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
 
-    private JiraIssue createRequest(final JiraEventNotificationConfig config, final Map<String, Object> model) {
+    private JiraIssue createIssueCreationRequest(final JiraEventNotificationConfig config,
+            final Map<String, Object> model) {
         model.put("graylog_url", config.graylogURL());
         return new JiraIssue(
                 config.projectKey(),

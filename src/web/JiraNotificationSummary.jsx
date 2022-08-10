@@ -88,6 +88,10 @@ class JiraNotificationSummary extends React.Component {
             <td>JQL filter for duplicate issues search</td>
             <td>{notification.config.search_filter_jql}</td>
           </tr>
+          <tr>
+            <td>Comment inserted in duplicate found issue</td>
+            <td>{notification.config.duplicate_issue_comment}</td>
+          </tr>
         </React.Fragment>
       </CommonNotificationSummary>
     );
