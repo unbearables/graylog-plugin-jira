@@ -1,6 +1,7 @@
 package org.graylog.plugins.jira.event.notifications;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,6 +14,7 @@ import org.graylog2.contentpacks.model.entities.references.ValueReference;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @AutoValue
 @JsonTypeName(JiraEventNotificationConfigEntity.TYPE_NAME)
 @JsonDeserialize(builder = JiraEventNotificationConfigEntity.Builder.class)
@@ -67,6 +69,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
     public abstract ValueReference searchGraylogHashField();
 
+    @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_REGEX)
+    public abstract ValueReference searchGraylogHashRegex();
+
     @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
     public abstract ValueReference searchFilterJQL();
 
@@ -76,6 +81,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
 
     public abstract Builder toBuilder();
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @AutoValue.Builder
     public static abstract class Builder implements EventNotificationConfigEntity.Builder<Builder> {
 
@@ -129,6 +135,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
         public abstract Builder searchGraylogHashField(ValueReference searchGraylogHashFieldName);
 
+        @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_REGEX)
+        public abstract Builder searchGraylogHashRegex(ValueReference searchGraylogHashRegex);
+
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(ValueReference searchFilterJQL);
 
@@ -154,6 +163,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
                 .issueSummary(issueSummary().asString(parameters))
                 .issueDescription(issueDescription().asString(parameters))
                 .searchGraylogHashField(searchGraylogHashField().asString(parameters))
+                .searchGraylogHashRegex(searchGraylogHashRegex().asString(parameters))
                 .searchFilterJQL(searchFilterJQL().asString(parameters))
                 .build();
     }

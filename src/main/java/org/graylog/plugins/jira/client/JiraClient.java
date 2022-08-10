@@ -103,7 +103,7 @@ public class JiraClient {
         final String jql = "project = " + config.projectKey()
                 + (!Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " + config.searchFilterJQL() + " " : " ")
                 + "AND \"" + parseGraylogHashField(config.searchGraylogHashField())[1]
-                + "\" ~ \"" + JiraIssue.createGraylogHash(config.issueDescription()) + "\"";
+                + "\" ~ \"" + JiraIssue.createGraylogHash(config.searchGraylogHashRegex(), config.issueDescription()) + "\"";
 
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/search").newBuilder()
                 .addQueryParameter("jql", jql)
@@ -155,6 +155,7 @@ public class JiraClient {
                 parseDelimitedValues(config.issueComponents()),
                 config.issueEnvironment(),
                 parseGraylogHashField(config.searchGraylogHashField())[0],
+                config.searchGraylogHashRegex(),
                 parseMapValues(config.issueCustomFields())
         );
     }

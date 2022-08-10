@@ -2,6 +2,7 @@ package org.graylog.plugins.jira.event.notifications;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -20,7 +21,10 @@ import javax.validation.constraints.NotBlank;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @AutoValue
 @JsonTypeName(JiraEventNotificationConfig.TYPE_NAME)
 @JsonDeserialize(builder = JiraEventNotificationConfig.Builder.class)
@@ -44,6 +48,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     public static final String FIELD_ISSUE_SUMMARY = "issue_summary";
     public static final String FIELD_ISSUE_DESCRIPTION = "issue_description";
     public static final String FIELD_SEARCH_GRAYLOG_HASH_FIELD = "search_graylog_hash_field";
+    public static final String FIELD_SEARCH_GRAYLOG_HASH_REGEX = "search_graylog_hash_regex";
     public static final String FIELD_SEARCH_FILTER_JQL = "search_filter_jql";
 
     // Default values
@@ -57,29 +62,29 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
             "--- [Event] --------------------------------------  \n" +
             "*Event:*                ${event}\n  " +
             "--- [Event Detail] -------------------------------  \n" +
-            "*Timestamp:*            ${event.timestamp}\n  " +
-            "*Message:*              ${event.message}\n  " +
-            "*Source:*               ${event.source}\n  " +
-            "*Key:*                  ${event.key}\n  " +
-            "*Priority:*             ${event.priority}\n  " +
-            "*Alert:*                ${event.alert}\n  " +
-            "*Timestamp Processing:* ${event.timestamp}\n  " +
-            "*TimeRange Start:*      ${event.timerange_start}\n  " +
-            "*TimeRange End:*        ${event.timerange_end}\n  " +
+            "*Timestamp:*            ${event.timestamp}\n" +
+            "*Message:*              ${event.message}\n" +
+            "*Source:*               ${event.source}\n" +
+            "*Key:*                  ${event.key}\n" +
+            "*Priority:*             ${event.priority}\n" +
+            "*Alert:*                ${event.alert}\n" +
+            "*Timestamp Processing:* ${event.timestamp}\n" +
+            "*TimeRange Start:*      ${event.timerange_start}\n" +
+            "*TimeRange End:*        ${event.timerange_end}\n" +
             "${if event.fields}\n" +
             "*Fields:*\n  " +
             "${foreach event.fields field}  ${field.key}: ${field.value}  \n" +
             "${end}\n" +
             "${if backlog}\n" +
             "--- [Backlog] ------------------------------------  \n" +
-            "*Messages:*  " +
+            "*Messages:*\n" +
             "${foreach backlog message}\n" +
-            "Graylog link: ${graylog_url}/messages/graylog_0/${message.id}\n" +
+            "Graylog link: ${graylog_url}/messages/${message.index}/${message.id}\n" +
             "```\n" +
-            "${message}  \n" +
+            "${message}\n" +
             "```\n" +
             "${end}\n" +
-            "${end}\n";
+            "${end}";
 
     @JsonProperty(FIELD_JIRA_URL)
     @NotBlank
@@ -133,6 +138,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
     public abstract String searchGraylogHashField();
 
+    @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_REGEX)
+    public abstract String searchGraylogHashRegex();
+
     @JsonProperty(FIELD_SEARCH_FILTER_JQL)
     public abstract String searchFilterJQL();
 
@@ -184,9 +192,17 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         if (!searchGraylogHashField().isEmpty() && !searchGraylogHashField().contains("=")) {
             validation.addError(FIELD_SEARCH_GRAYLOG_HASH_FIELD, FIELD_SEARCH_GRAYLOG_HASH_FIELD + " is incorrectly filled.");
         }
+        if (!searchGraylogHashRegex().isEmpty()) {
+            try {
+                Pattern.compile(searchGraylogHashRegex());
+            } catch (final PatternSyntaxException e) {
+                validation.addError(FIELD_SEARCH_GRAYLOG_HASH_REGEX, FIELD_SEARCH_GRAYLOG_HASH_REGEX + " is not a valid regex.");
+            }
+        }
         return validation;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @AutoValue.Builder
     public static abstract class Builder implements EventNotificationConfig.Builder<Builder> {
 
@@ -204,6 +220,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                     .issueSummary(DEFAULT_ISSUE_SUMMARY)
                     .issueDescription(DEFAULT_ISSUE_DESCRIPTION)
                     .searchGraylogHashField("")
+                    .searchGraylogHashRegex("")
                     .searchFilterJQL("");
         }
 
@@ -252,6 +269,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
         public abstract Builder searchGraylogHashField(String searchGraylogHashField);
 
+        @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_REGEX)
+        public abstract Builder searchGraylogHashRegex(String searchGraylogHashRegex);
+
         @JsonProperty(FIELD_SEARCH_FILTER_JQL)
         public abstract Builder searchFilterJQL(String searchFilterJQL);
 
@@ -276,6 +296,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                 .issueSummary(ValueReference.of(issueSummary()))
                 .issueDescription(ValueReference.of(issueDescription()))
                 .searchGraylogHashField(ValueReference.of(searchGraylogHashField()))
+                .searchGraylogHashRegex(ValueReference.of(searchGraylogHashRegex()))
                 .searchFilterJQL(ValueReference.of(searchFilterJQL()))
                 .build();
     }

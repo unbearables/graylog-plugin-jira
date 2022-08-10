@@ -31,7 +31,7 @@ const DEFAULT_ISSUE_DESCRIPTION = `--- [Event Definition] ----------------------
 --- [Backlog] ------------------------------------
 *Messages:*
 \${foreach backlog message}
-Graylog link: \${graylog_url}/messages/graylog_0/\${message.id}
+Graylog link: \${graylog_url}/messages/\${message.index}/\${message.id}
 \`\`\`
 \${message}  
 \`\`\`
@@ -276,6 +276,20 @@ class JiraNotificationForm extends React.Component {
             "Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off searching."
           )}
           value={config.search_graylog_hash_field || ""}
+          onChange={this.handleChange}
+        />
+        <Input
+          id="notification-search-graylog-hash-regex"
+          name="search_graylog_hash_regex"
+          label="Search for duplicate issues description regex"
+          type="text"
+          bsStyle={validation.errors.search_graylog_hash_regex ? "error" : null}
+          help={lodash.get(
+            validation,
+            "errors.search_graylog_hash_regex[0]",
+            "Regex for extracting part of issue description, which can be used to detect duplicate issues. If absent and graylog hash field is filled, then whole description will be used."
+          )}
+          value={config.search_graylog_hash_regex || ""}
           onChange={this.handleChange}
         />
         <Input
