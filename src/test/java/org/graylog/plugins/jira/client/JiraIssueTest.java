@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class JiraIssueTest {
 
@@ -24,7 +25,7 @@ class JiraIssueTest {
         customFields.put("customfield_1", "custom");
         final JiraIssue ji = new JiraIssue("GRAYLOG","summary", "desc",
                 "bug", "high", labels, components, "test",
-                "customfield_123", customFields);
+                "customfield_123", null, customFields);
         final String expected = "{"
                 + "\"fields\": {"
                 + "\"project\":{\"key\":\"GRAYLOG\"},"
@@ -37,12 +38,21 @@ class JiraIssueTest {
                 + "  {\"name\":\"component\"}"
                 + "],"
                 + "\"environment\":\"test\","
-                + "\"customfield_123\":\"" + JiraIssue.createGraylogHash("desc") + "\","
+                + "\"customfield_123\":\"" + JiraIssue.createGraylogHash(null, "desc") + "\","
                 + "\"customfield_1\":\"custom\""
                 + "}"
                 + "}";
 
         assertJSON(expected, ji.toJsonString());
+    }
+
+    @Test
+    void createGraylogHash_success() {
+        final String testValue = "ABC123!";
+        final String noRegex = JiraIssue.createGraylogHash(null, testValue);
+        final String withRegex = JiraIssue.createGraylogHash("\\d+", testValue);
+
+        assertNotEquals(noRegex, withRegex);
     }
 
     private void assertJSON(final String json1, final String json2) throws IOException {

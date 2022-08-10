@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JiraIssue {
@@ -25,11 +27,12 @@ public class JiraIssue {
     private final Set<String> components;
     private final String environment;
     private final String graylogHashCustomField;
+    private final String graylogHashRegex;
     private final Map<String, String> customFields;
 
     public JiraIssue(String projectKey, String summary, String description, String issueType, String priority,
             Set<String> labels, Set<String> components, String environment, String graylogHashCustomField,
-            Map<String, String> customFields) {
+            String graylogHashRegex, Map<String, String> customFields) {
         this.projectKey = projectKey;
         this.summary = summary;
         this.description = description;
@@ -39,6 +42,7 @@ public class JiraIssue {
         this.components = components;
         this.environment = environment;
         this.graylogHashCustomField = graylogHashCustomField;
+        this.graylogHashRegex = graylogHashRegex;
         this.customFields = customFields;
     }
 
@@ -65,7 +69,7 @@ public class JiraIssue {
 
         // Custom fields
         if (!Strings.isNullOrEmpty(graylogHashCustomField)) {
-            params.put(graylogHashCustomField, createGraylogHash(description));
+            params.put(graylogHashCustomField, createGraylogHash(graylogHashRegex, description));
         }
         customFields.forEach(params::putIfAbsent);
 
@@ -76,14 +80,32 @@ public class JiraIssue {
         }
     }
 
-    public static String createGraylogHash(final String string) {
+    public static String createGraylogHash(final String regex, final String string) {
         final MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        md.update(string.getBytes(Charset.defaultCharset()));
+
+        final String value;
+        if (regex == null) {
+            value = string;
+        } else {
+            final Pattern pattern = Pattern.compile(regex);
+            final Matcher matcher = pattern.matcher(string);
+
+            final StringBuilder sb = new StringBuilder();
+            if (matcher.find()) {
+                int i = 0;
+                do {
+                    sb.append(matcher.group(i++));
+                } while (i < matcher.groupCount());
+            }
+            value = sb.length() > 0 ? sb.toString() : string;
+        }
+
+        md.update(value.getBytes(Charset.defaultCharset()));
         return DatatypeConverter.printHexBinary(md.digest());
     }
 }
