@@ -213,7 +213,7 @@ public class JiraClient {
         } else {
             template = msgTemplate;
         }
-        return templateEngine.transform(template, model);
+        return templateEngine.transform(template, model).replaceAll("\\r\\n|\\n|\\r", "\n");
     }
 
     private Set<String> parseDelimitedValues(final String delimitedString) {
