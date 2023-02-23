@@ -1,11 +1,13 @@
 import { PluginManifest, PluginStore } from "graylog-web-plugin/plugin";
 
+import JiraNotificationDetails from './JiraNotificationDetails';
 import JiraNotificationForm from "./JiraNotificationForm";
 import JiraNotificationSummary from "./JiraNotificationSummary";
 
+import packageJson from '../../package.json';
+
 PluginStore.register(
-  new PluginManifest(
-    {},
+  new PluginManifest(packageJson,
     {
       eventNotificationTypes: [
         {
@@ -13,6 +15,7 @@ PluginStore.register(
           displayName: "Jira Notification",
           formComponent: JiraNotificationForm,
           summaryComponent: JiraNotificationSummary,
+          detailsComponent: JiraNotificationDetails,
           defaultConfig: JiraNotificationForm.defaultConfig
         }
       ]
