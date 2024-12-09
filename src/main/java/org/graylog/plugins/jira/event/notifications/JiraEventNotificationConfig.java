@@ -40,6 +40,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     public static final String FIELD_CRED_PWD = "cred_password";
     public static final String FIELD_PROJECT_KEY = "project_key";
     public static final String FIELD_ISSUE_TYPE = "issue_type";
+    public static final String FIELD_ISSUE_ASSIGNEE_NAME = "issue_assignee_name";
     public static final String FIELD_ISSUE_PRIORITY = "issue_priority";
     public static final String FIELD_ISSUE_LABELS = "issue_labels";
     public static final String FIELD_ISSUE_COMPONENTS = "issue_components";
@@ -112,6 +113,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     @JsonProperty(FIELD_ISSUE_TYPE)
     @NotBlank
     public abstract String issueType();
+
+    @JsonProperty(FIELD_ISSUE_ASSIGNEE_NAME)
+    public abstract String issueAssigneeName();
 
     @JsonProperty(FIELD_ISSUE_PRIORITY)
     public abstract String issuePriority();
@@ -250,6 +254,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonProperty(FIELD_ISSUE_TYPE)
         public abstract Builder issueType(String issueType);
 
+        @JsonProperty(FIELD_ISSUE_ASSIGNEE_NAME)
+        public abstract Builder issueAssigneeName(String issueAssigneeName);
+
         @JsonProperty(FIELD_ISSUE_PRIORITY)
         public abstract Builder issuePriority(String issuePriority);
 
@@ -296,6 +303,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                 .credPassword(ValueReference.of(credPassword()))
                 .projectKey(ValueReference.of(projectKey()))
                 .issueType(ValueReference.of(issueType()))
+                .issueAssigneeName(ValueReference.of(issueAssigneeName()))
                 .issuePriority(ValueReference.of(issuePriority()))
                 .issueLabels(ValueReference.of(issueLabels()))
                 .issueComponents(ValueReference.of(issueComponents()))

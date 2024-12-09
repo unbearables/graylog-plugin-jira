@@ -22,6 +22,7 @@ public class JiraIssue {
     private final String summary;
     private final String description;
     private final String issueType;
+    private final String assigneeName;
     private final String priority;
     private final Set<String> labels;
     private final Set<String> components;
@@ -31,13 +32,14 @@ public class JiraIssue {
     private final Map<String, String> customFields;
     private String graylogHash;
 
-    public JiraIssue(String projectKey, String summary, String description, String issueType, String priority,
-            Set<String> labels, Set<String> components, String environment, String graylogHashCustomField,
-            String graylogHashRegex, Map<String, String> customFields) {
+    public JiraIssue(String projectKey, String summary, String description, String issueType, String assigneeName,
+            String priority, Set<String> labels, Set<String> components, String environment,
+            String graylogHashCustomField, String graylogHashRegex, Map<String, String> customFields) {
         this.projectKey = projectKey;
         this.summary = summary;
         this.description = description;
         this.issueType = issueType;
+        this.assigneeName = assigneeName;
         this.priority = priority;
         this.labels = labels;
         this.components = components;
@@ -53,6 +55,9 @@ public class JiraIssue {
         params.put("summary", summary);
         params.put("description", description);
         params.put("issuetype", ImmutableMap.of("name", issueType.trim()));
+        if (!Strings.isNullOrEmpty(assigneeName)) {
+            params.put("assignee", ImmutableMap.of("name", assigneeName.trim()));
+        }
         if (!Strings.isNullOrEmpty(priority)) {
             params.put("priority", ImmutableMap.of("name", priority.trim()));
         }

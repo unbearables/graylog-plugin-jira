@@ -26,6 +26,9 @@ const JiraNotificationDetails = ({ notification }) => {
       { notification.config.issue_type
         ? <ReadOnlyFormGroup label="JIRA Issue type" value={notification.config.issue_type} />
         : null}
+      { notification.config.issue_assignee_name
+          ? <ReadOnlyFormGroup label="JIRA Issue assignee username" value={notification.config.issue_assignee_name} />
+          : null}
       { notification.config.issue_priority
         ? <ReadOnlyFormGroup label="JIRA Issue priority" value={notification.config.issue_priority} />
         : null}
