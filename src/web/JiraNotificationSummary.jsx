@@ -49,6 +49,10 @@ class JiraNotificationSummary extends React.Component {
             <td>{notification.config.issue_type}</td>
           </tr>
           <tr>
+            <td>Issue assignee name</td>
+            <td>{notification.config.issue_assignee_name}</td>
+          </tr>
+          <tr>
             <td>Issue priority</td>
             <td>{notification.config.issue_priority}</td>
           </tr>

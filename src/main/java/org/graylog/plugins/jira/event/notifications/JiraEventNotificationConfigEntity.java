@@ -45,6 +45,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_TYPE)
     public abstract ValueReference issueType();
 
+    @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_ASSIGNEE_NAME)
+    public abstract ValueReference issueAssigneeName();
+
     @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_PRIORITY)
     public abstract ValueReference issuePriority();
 
@@ -114,6 +117,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
         @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_TYPE)
         public abstract Builder issueType(ValueReference issueType);
 
+        @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_ASSIGNEE_NAME)
+        public abstract Builder issueAssigneeName(ValueReference assigneeName);
+
         @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_PRIORITY)
         public abstract Builder issuePriority(ValueReference issuePriority);
 
@@ -161,6 +167,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
                 .credPassword(credPassword().asString(parameters))
                 .projectKey(projectKey().asString(parameters))
                 .issueType(issueType().asString(parameters))
+                .issueAssigneeName(issueAssigneeName().asString(parameters))
                 .issuePriority(issuePriority().asString(parameters))
                 .issueLabels(issueLabels().asString(parameters))
                 .issueComponents(issueComponents().asString(parameters))

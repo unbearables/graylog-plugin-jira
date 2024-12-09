@@ -3,12 +3,7 @@ package org.graylog.plugins.jira.client;
 import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+
 import org.apache.commons.codec.binary.Base64;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
 import org.json.JSONArray;
@@ -30,6 +25,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class JiraClient {
 
@@ -188,6 +190,7 @@ public class JiraClient {
                 buildMessage(config.issueDescription(), model),
                 config.issueType(),
                 config.issuePriority(),
+                config.issueAssigneeName(),
                 parseDelimitedValues(config.issueLabels()),
                 parseDelimitedValues(config.issueComponents()),
                 config.issueEnvironment(),

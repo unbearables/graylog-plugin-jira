@@ -4,7 +4,7 @@
   "description": "Create JIRA tasks from Graylog.",
   "repository": {
     "type": "git",
-    "url": "TODO"
+    "url": "https://github.com/unbearables/graylog-plugin-jira"
   },
   "scripts": {
     "build": "webpack",

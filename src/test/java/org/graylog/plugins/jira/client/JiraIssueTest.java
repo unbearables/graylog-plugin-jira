@@ -24,7 +24,7 @@ class JiraIssueTest {
         final Map<String, String> customFields = new HashMap<>();
         customFields.put("customfield_1", "custom");
         final JiraIssue ji = new JiraIssue("GRAYLOG","summary", "desc",
-                "bug", "high", labels, components, "test",
+                "bug", "homer", "high", labels, components, "test",
                 "customfield_123", null, customFields);
         final String expected = "{"
                 + "\"fields\": {"
@@ -32,6 +32,7 @@ class JiraIssueTest {
                 + "\"summary\":\"summary\","
                 + "\"description\":\"desc\","
                 + "\"issuetype\":{\"name\":\"bug\"},"
+                + "\"assignee\":{\"name\":\"homer\"},"
                 + "\"priority\":{\"name\":\"high\"},"
                 + "\"labels\":[\"label\"],"
                 + "\"components\":["
@@ -51,10 +52,10 @@ class JiraIssueTest {
         final String testDesc = "ABC123!";
 
         final JiraIssue jiNoRegex = new JiraIssue("GRAYLOG","summary", testDesc,
-                "bug", "high", new HashSet<>(), new HashSet<>(), "test",
+                "bug", "homer", "high", new HashSet<>(), new HashSet<>(), "test",
                 "customfield_123", null, new HashMap<>());
         final JiraIssue jiWithRegex = new JiraIssue("GRAYLOG","summary", testDesc,
-                "bug", "high", new HashSet<>(), new HashSet<>(), "test",
+                "bug", "homer", "high", new HashSet<>(), new HashSet<>(), "test",
                 "customfield_123", "\\d+", new HashMap<>());
 
         assertNotEquals(jiNoRegex.createGraylogHash(), jiWithRegex.createGraylogHash());

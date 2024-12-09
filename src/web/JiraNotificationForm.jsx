@@ -166,6 +166,20 @@ class JiraNotificationForm extends React.Component {
           onChange={this.handleChange}
         />
         <Input
+          id="notification-issue-assignee-name"
+          name="issue_assignee_name"
+          label="JIRA Issue assignee username"
+          type="text"
+          bsStyle={validation.errors.issue_assignee_name ? "error" : null}
+          help={lodash.get(
+              validation,
+              "errors.issue_assignee_name[0]",
+              "See username in Jira profile."
+          )}
+          value={config.issue_assignee_name || ""}
+          onChange={this.handleChange}
+        />
+        <Input
           id="notification-issue-priority"
           name="issue_priority"
           label="JIRA Issue priority"
