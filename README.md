@@ -61,7 +61,6 @@ This project is using Maven 3. Requires Java 8 or higher and `yarn`.
 
 * Clone this repository.
 * Run `mvn package` to build a JAR file.
-* Optional: Run `mvn jdeb:jdeb` and `mvn rpm:rpm` to create a DEB and RPM package respectively.
 * Copy generated JAR file in target directory to your Graylog plugin directory.
 * Restart the Graylog.
 
