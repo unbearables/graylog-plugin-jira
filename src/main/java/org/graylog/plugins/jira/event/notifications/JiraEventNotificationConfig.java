@@ -220,6 +220,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
                     .type(TYPE_NAME)
                     .proxyURL("")
                     .graylogURL("")
+                    .issueAssigneeName("")
                     .issuePriority("")
                     .issueLabels("")
                     .issueComponents("")
