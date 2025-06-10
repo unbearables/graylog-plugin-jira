@@ -14,7 +14,7 @@ public class JiraNotificationPlugin implements Plugin {
     }
 
     @Override
-    public Collection<PluginModule> modules () {
+    public Collection<PluginModule> modules() {
         return Collections.singletonList(new JiraNotificationModule());
     }
 }
