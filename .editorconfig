@@ -1,0 +1,16 @@
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+tab_width = 4
+ij_wrap_on_typing = false
+
+[{*.yaml,*.yml}]
+indent_size = 2
+tab_width = 2
+
+[{*.js,*.jsx,*.css,*.html}]
+indent_size = 2
+tab_width = 2

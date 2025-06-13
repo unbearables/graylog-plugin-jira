@@ -18,7 +18,7 @@ const JiraNotificationDetails = ({ notification }) => {
         ? <ReadOnlyFormGroup label="Credentials - username" value={notification.config.cred_username} />
         : null}
       { notification.config.cred_password
-        ? <ReadOnlyFormGroup label="Credentials - password" value={notification.config.cred_password} />
+        ? <ReadOnlyFormGroup label="Credentials - password" value={"*".repeat(notification.config.cred_password.length)} />
         : null}
       { notification.config.project_key
         ? <ReadOnlyFormGroup label="JIRA Project key" value={notification.config.project_key} />
@@ -59,7 +59,7 @@ const JiraNotificationDetails = ({ notification }) => {
       { notification.config.search_filter_jql
         ? <ReadOnlyFormGroup label="Search filter JQL - duplicate filter" value={notification.config.search_filter_jql} />
         : null}
-      { notification.config.graylog_url
+      { notification.config.duplicate_issue_comment
         ? <ReadOnlyFormGroup label="Comment inserted in duplicate found issue" value={notification.config.duplicate_issue_comment} />
         : null}
     </>

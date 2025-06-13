@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
-import org.apache.commons.lang3.StringUtils;
+
 import org.graylog.events.contentpack.entities.EventNotificationConfigEntity;
 import org.graylog.events.event.EventDto;
 import org.graylog.events.notifications.EventNotificationConfig;
@@ -17,12 +17,13 @@ import org.graylog2.contentpacks.EntityDescriptorIds;
 import org.graylog2.contentpacks.model.entities.references.ValueReference;
 import org.graylog2.plugin.rest.ValidationResult;
 
-import javax.validation.constraints.NotBlank;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import jakarta.validation.constraints.NotBlank;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AutoValue
@@ -55,38 +56,39 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
 
     // Default values
     public static final String DEFAULT_ISSUE_SUMMARY = "Graylog log error - ${event.id}";
-    public static final String DEFAULT_ISSUE_DESCRIPTION =
-            "--- [Event Definition] ---\n" +
-            "*ID:* ${event_definition_id}\n" +
-            "*Type:* ${event_definition_type}\n" +
-            "*Title:* ${event_definition_title}\n" +
-            "*Description:* ${event_definition_description}\n" +
-            "--- [Event] ---\n" +
-            "*Event:* ${event}\n" +
-            "--- [Event Detail] ---\n" +
-            "*Timestamp:* ${event.timestamp}\n" +
-            "*Message:* ${event.message}\n" +
-            "*Source:* ${event.source}\n" +
-            "*Key:* ${event.key}\n" +
-            "*Priority:* ${event.priority}\n" +
-            "*Alert:* ${event.alert}\n" +
-            "*Timestamp Processing:* ${event.timestamp}\n" +
-            "*TimeRange Start:* ${event.timerange_start}\n" +
-            "*TimeRange End:* ${event.timerange_end}\n" +
-            "${if event.fields}\n" +
-            "*Fields:*\n" +
-            "${foreach event.fields field} ${field.key}: ${field.value}\n" +
-            "${end}\n" +
-            "${if backlog}\n" +
-            "--- [Backlog] ---\n" +
-            "*Messages:*\n" +
-            "${foreach backlog message}\n" +
-            "Graylog link: ${graylog_url}/messages/${message.index}/${message.id}\n" +
-            "```\n" +
-            "${message}\n" +
-            "```\n" +
-            "${end}\n" +
-            "${end}";
+    public static final String DEFAULT_ISSUE_DESCRIPTION = """
+            --- [Event Definition] ---
+            *ID:* ${event_definition_id}
+            *Type:* ${event_definition_type}
+            *Title:* ${event_definition_title}
+            *Description:* ${event_definition_description}
+            --- [Event] ---
+            *Event:* ${event}
+            --- [Event Detail] ---
+            *Timestamp:* ${event.timestamp}
+            *Message:* ${event.message}
+            *Source:* ${event.source}
+            *Key:* ${event.key}
+            *Priority:* ${event.priority}
+            *Alert:* ${event.alert}
+            *Timestamp Processing:* ${event.timestamp}
+            *TimeRange Start:* ${event.timerange_start}
+            *TimeRange End:* ${event.timerange_end}
+            ${if event.fields}
+            *Fields:*
+            ${foreach event.fields field} ${field.key}: ${field.value}
+            ${end}
+            ${if backlog}
+            --- [Backlog] ---
+            *Messages:*
+            ${foreach backlog message}
+            Graylog link: ${graylog_url}/messages/${message.index}/${message.id}
+            ```
+            ${message}
+            ```
+            ${end}
+            ${end}"
+        """;
 
     @JsonProperty(FIELD_JIRA_URL)
     @NotBlank
@@ -212,7 +214,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @AutoValue.Builder
-    public static abstract class Builder implements EventNotificationConfig.Builder<Builder> {
+    public abstract static class Builder implements EventNotificationConfig.Builder<Builder> {
 
         @JsonCreator
         public static Builder create() {
@@ -320,7 +322,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     }
 
     private boolean validURL(final String uri) {
-        if (StringUtils.isEmpty(uri)) {
+        if (uri == null || uri.isEmpty()) {
             return true;
         }
         try {

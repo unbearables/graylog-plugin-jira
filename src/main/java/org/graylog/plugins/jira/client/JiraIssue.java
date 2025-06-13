@@ -3,9 +3,7 @@ package org.graylog.plugins.jira.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
-import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,7 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 public class JiraIssue {
 
@@ -32,6 +31,7 @@ public class JiraIssue {
     private final Map<String, String> customFields;
     private String graylogHash;
 
+    @SuppressWarnings("java:S107")
     public JiraIssue(String projectKey, String summary, String description, String issueType, String assigneeName,
             String priority, Set<String> labels, Set<String> components, String environment,
             String graylogHashCustomField, String graylogHashRegex, Map<String, String> customFields) {
@@ -51,23 +51,23 @@ public class JiraIssue {
 
     public String toJsonString() {
         final Map<String, Object> params = new HashMap<>();
-        params.put("project", ImmutableMap.of("key", projectKey.trim()));
+        params.put("project", Map.of("key", projectKey.trim()));
         params.put("summary", summary);
         params.put("description", description);
-        params.put("issuetype", ImmutableMap.of("name", issueType.trim()));
+        params.put("issuetype", Map.of("name", issueType.trim()));
         if (!Strings.isNullOrEmpty(assigneeName)) {
-            params.put("assignee", ImmutableMap.of("name", assigneeName.trim()));
+            params.put("assignee", Map.of("name", assigneeName.trim()));
         }
         if (!Strings.isNullOrEmpty(priority)) {
-            params.put("priority", ImmutableMap.of("name", priority.trim()));
+            params.put("priority", Map.of("name", priority.trim()));
         }
         if (labels != null && !labels.isEmpty()) {
             params.put("labels", labels);
         }
         if (components != null && !components.isEmpty()) {
             params.put("components", components.stream()
-                    .map(c -> ImmutableMap.of("name", c.trim()))
-                    .collect(Collectors.toList()));
+                    .map(c -> Map.of("name", c.trim()))
+                    .toList());
         }
         if (!Strings.isNullOrEmpty(environment)) {
             params.put("environment", environment.trim());
@@ -80,9 +80,9 @@ public class JiraIssue {
         customFields.forEach(params::putIfAbsent);
 
         try {
-            return new ObjectMapper().writeValueAsString(ImmutableMap.of("fields", params));
+            return new ObjectMapper().writeValueAsString(Map.of("fields", params));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to build Jira issue payload as JSON format.", e);
+            throw new IllegalStateException("Failed to build Jira issue payload as JSON format.", e);
         }
     }
 
@@ -95,7 +95,7 @@ public class JiraIssue {
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
 
         final String value;
@@ -112,7 +112,7 @@ public class JiraIssue {
                     sb.append(matcher.group(i++));
                 } while (i < matcher.groupCount());
             }
-            value = sb.length() > 0 ? sb.toString() : description;
+            value = !sb.isEmpty() ? sb.toString() : description;
         }
 
         md.update(value.getBytes(Charset.defaultCharset()));

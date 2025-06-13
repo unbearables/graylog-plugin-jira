@@ -2,6 +2,7 @@ package org.graylog.plugins.jira.event.notifications;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+
 import org.graylog.events.notifications.EventNotification;
 import org.graylog.events.notifications.EventNotificationContext;
 import org.graylog.events.notifications.EventNotificationException;
@@ -15,9 +16,10 @@ import org.graylog.scheduler.JobTriggerDto;
 import org.graylog2.jackson.TypeReferences;
 import org.graylog2.plugin.MessageSummary;
 
-import javax.inject.Inject;
 import java.util.Map;
 import java.util.Optional;
+
+import jakarta.inject.Inject;
 
 public class JiraEventNotification implements EventNotification {
 

@@ -1,31 +1,31 @@
 package org.graylog.plugins.jira.client;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
-import org.apache.commons.codec.binary.Base64;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.inject.Inject;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -37,8 +37,10 @@ public class JiraClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(JiraClient.class);
     private static final String HEADER_AUTH = "Authorization";
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private final Engine templateEngine;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     public JiraClient(final Engine engine) {
@@ -68,13 +70,15 @@ public class JiraClient {
 
         // Create issue
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/issue");
-        final RequestBody reqBody = RequestBody.create(MediaType.get("application/json"), jiraIssue.toJsonString());
+        final RequestBody reqBody = RequestBody.create(jiraIssue.toJsonString(), JSON);
         final Request req = new Request.Builder()
                 .url(url)
                 .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
                 .post(reqBody)
                 .build();
-        LOG.debug("Request: {}", req);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Request: {}", req);
+        }
 
         // Response
         try (final Response res = client.newCall(req).execute()) {
@@ -82,7 +86,9 @@ public class JiraClient {
                 throw new JiraClientException("Jira (issue create) returned null body");
             }
             if (!res.isSuccessful()) {
-                LOG.debug(res.toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(res.toString());
+                }
                 throw new JiraClientException("Jira (issue create) returned client error. HTTP Status=" + res.code()
                         + ", response=" + res.body().string());
             }
@@ -124,27 +130,31 @@ public class JiraClient {
                 .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
                 .get()
                 .build();
-        LOG.debug("Request: {}", req);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Request: {}", req);
+        }
 
         try (final Response res = client.newCall(req).execute()) {
             if (res.body() == null) {
                 throw new JiraClientException("Jira (issue search) returned null body");
             }
             if (!res.isSuccessful()) {
-                LOG.debug(res.toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(res.toString());
+                }
                 throw new JiraClientException("Jira (issue search) returned client error. HTTP Status=" + res.code()
                         + ", response=" + res.body().string());
             }
             final String jsonData = res.body().string();
-            final JSONArray issues = new JSONObject(jsonData).getJSONArray("issues");
-            if (issues != null && !issues.isEmpty()) {
-                return issues.getJSONObject(0).getString("id");
+            final JsonNode issues = objectMapper.readValue(jsonData, JsonNode.class).get("issues");
+            if (issues != null && issues.isArray() && !issues.isEmpty()) {
+                return issues.get(0).get("id").textValue();
             }
             return null; // no duplicates found
+        } catch (final JacksonException ex) {
+            throw new IllegalStateException("Failed to read JIRA (issue search) response body.", ex);
         } catch (final IOException ex) {
             throw new JiraClientException("Failed to send GET request to JIRA (issue search).", ex);
-        } catch (final JSONException ex) {
-            throw new RuntimeException("Failed to read JIRA (issue search) response body.", ex);
         }
     }
 
@@ -153,21 +163,24 @@ public class JiraClient {
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/issue/" + issueId + "/comment").newBuilder()
                 .build();
 
-        final RequestBody reqBody = RequestBody.create(MediaType.get("application/json"),
-                "{\"body\":\"" + buildMessage(config.duplicateIssueComment(), model) + "\"}");
+        final RequestBody reqBody = RequestBody.create("{\"body\":\"" + buildMessage(config.duplicateIssueComment(), model) + "\"}", JSON);
         final Request req = new Request.Builder()
                 .url(url)
                 .addHeader(HEADER_AUTH, basicAuthHeaderValue(config))
                 .post(reqBody)
                 .build();
-        LOG.debug("Request: {}", req);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Request: {}", req);
+        }
 
         try (final Response res = client.newCall(req).execute()) {
             if (res.body() == null) {
                 throw new JiraClientException("Jira (issue comment) returned null body");
             }
             if (!res.isSuccessful()) {
-                LOG.debug(res.toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(res.toString());
+                }
                 throw new JiraClientException("Jira (issue comment) returned client error. HTTP Status=" + res.code()
                         + ", response=" + res.body().string());
             }
@@ -178,7 +191,7 @@ public class JiraClient {
 
     private String basicAuthHeaderValue(final JiraEventNotificationConfig config) {
         final String auth = config.credUsername() + ":" + config.credPassword();
-        return "Basic " + new String(Base64.encodeBase64(auth.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
+        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
     }
 
     private JiraIssue createIssueCreationRequest(final JiraEventNotificationConfig config,
