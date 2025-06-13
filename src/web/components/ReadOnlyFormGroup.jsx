@@ -18,7 +18,6 @@ const readableValue = (value) => {
   if (value) {
     return value;
   }
-
   return '-';
 };
 

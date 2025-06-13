@@ -7,7 +7,6 @@ import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
-import org.apache.commons.codec.binary.Base64;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +16,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -179,7 +179,7 @@ public class JiraClient {
             }
             if (!res.isSuccessful()) {
                 if (LOG.isDebugEnabled()) {
-                LOG.debug(res.toString());
+                    LOG.debug(res.toString());
                 }
                 throw new JiraClientException("Jira (issue comment) returned client error. HTTP Status=" + res.code()
                         + ", response=" + res.body().string());
@@ -191,7 +191,7 @@ public class JiraClient {
 
     private String basicAuthHeaderValue(final JiraEventNotificationConfig config) {
         final String auth = config.credUsername() + ":" + config.credPassword();
-        return "Basic " + new String(Base64.encodeBase64(auth.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
+        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
     }
 
     private JiraIssue createIssueCreationRequest(final JiraEventNotificationConfig config,

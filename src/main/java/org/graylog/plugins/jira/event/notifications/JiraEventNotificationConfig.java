@@ -214,7 +214,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @AutoValue.Builder
-    public static abstract class Builder implements EventNotificationConfig.Builder<Builder> {
+    public abstract static class Builder implements EventNotificationConfig.Builder<Builder> {
 
         @JsonCreator
         public static Builder create() {
