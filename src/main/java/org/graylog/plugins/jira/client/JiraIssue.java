@@ -4,16 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import jakarta.xml.bind.DatatypeConverter;
 
 public class JiraIssue {
 
@@ -27,14 +20,13 @@ public class JiraIssue {
     private final Set<String> components;
     private final String environment;
     private final String graylogHashCustomField;
-    private final String graylogHashRegex;
+    private final String messageHash; // hash to detect duplicate issues
     private final Map<String, String> customFields;
-    private String graylogHash;
 
     @SuppressWarnings("java:S107")
     public JiraIssue(String projectKey, String summary, String description, String issueType, String assigneeName,
             String priority, Set<String> labels, Set<String> components, String environment,
-            String graylogHashCustomField, String graylogHashRegex, Map<String, String> customFields) {
+            String graylogHashCustomField, String messageHash, Map<String, String> customFields) {
         this.projectKey = projectKey;
         this.summary = summary;
         this.description = description;
@@ -45,7 +37,7 @@ public class JiraIssue {
         this.components = components;
         this.environment = environment;
         this.graylogHashCustomField = graylogHashCustomField;
-        this.graylogHashRegex = graylogHashRegex;
+        this.messageHash = messageHash;
         this.customFields = customFields;
     }
 
@@ -74,8 +66,8 @@ public class JiraIssue {
         }
 
         // Custom fields
-        if (!Strings.isNullOrEmpty(graylogHashCustomField)) {
-            params.put(graylogHashCustomField, createGraylogHash());
+        if (!Strings.isNullOrEmpty(graylogHashCustomField) && messageHash != null) {
+            params.put(graylogHashCustomField, messageHash);
         }
         customFields.forEach(params::putIfAbsent);
 
@@ -86,37 +78,7 @@ public class JiraIssue {
         }
     }
 
-    public String createGraylogHash() {
-        if (graylogHash != null) {
-            return graylogHash;
-        }
-
-        final MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-
-        final String value;
-        if (graylogHashRegex == null) {
-            value = description;
-        } else {
-            final Pattern pattern = Pattern.compile(graylogHashRegex);
-            final Matcher matcher = pattern.matcher(description);
-
-            final StringBuilder sb = new StringBuilder();
-            if (matcher.find()) {
-                int i = 0;
-                do {
-                    sb.append(matcher.group(i++));
-                } while (i < matcher.groupCount());
-            }
-            value = !sb.isEmpty() ? sb.toString() : description;
-        }
-
-        md.update(value.getBytes(Charset.defaultCharset()));
-        graylogHash = DatatypeConverter.printHexBinary(md.digest());
-        return graylogHash;
+    public String getMessageHash() {
+        return messageHash;
     }
 }

@@ -7,7 +7,9 @@ import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
+import org.graylog.events.notifications.EventNotificationModelData;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
+import org.graylog2.jackson.TypeReferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,15 +19,20 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
+import jakarta.xml.bind.DatatypeConverter;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -47,7 +54,7 @@ public class JiraClient {
         this.templateEngine = engine;
     }
 
-    public void createIssue(final JiraEventNotificationConfig config, final Map<String, Object> model) {
+    public void createIssue(final JiraEventNotificationConfig config, final EventNotificationModelData model) {
         final OkHttpClient client;
         if (Strings.isNullOrEmpty(config.proxyURL())) {
             client = new OkHttpClient();
@@ -55,14 +62,17 @@ public class JiraClient {
             client = new OkHttpClient.Builder().proxy(buildProxy(config.proxyURL())).build();
         }
 
-        final JiraIssue jiraIssue = createIssueCreationRequest(config, model);
+
+        final Map<String, Object> templateData = objectMapper.convertValue(model, TypeReferences.MAP_STRING_OBJECT);
+        templateData.put("graylog_url", config.graylogURL());
+        final JiraIssue jiraIssue = createIssueCreationRequest(config, model, templateData);
 
         if (!Strings.isNullOrEmpty(config.searchGraylogHashField())) {
             final String duplicateIssueId = searchForDuplicateIssue(client, config, jiraIssue);
             if (duplicateIssueId != null) {
                 LOG.debug("Duplicate JIRA issue detected with {} - issue will not be created", duplicateIssueId);
                 if (!Strings.isNullOrEmpty(config.duplicateIssueComment())) {
-                    addIssueComment(client, config, duplicateIssueId, model);
+                    addIssueComment(client, config, duplicateIssueId, templateData);
                 }
                 return;
             }
@@ -115,9 +125,9 @@ public class JiraClient {
     private String searchForDuplicateIssue(final OkHttpClient client, final JiraEventNotificationConfig config,
                                            final JiraIssue jiraIssue) {
         final String jql = "project = " + config.projectKey()
-                + (Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " : " " + config.searchFilterJQL() + " ")
-                + "AND \"" + parseGraylogHashField(config.searchGraylogHashField())[1]
-                + "\" ~ \"" + jiraIssue.createGraylogHash() + "\"";
+                           + (Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " : " " + config.searchFilterJQL() + " ")
+                           + "AND \"" + parseJiraField(config.searchGraylogHashField())[1]
+                           + "\" ~ \"" + jiraIssue.getMessageHash() + "\"";
 
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/search").newBuilder()
                 .addQueryParameter("jql", jql)
@@ -195,22 +205,78 @@ public class JiraClient {
     }
 
     private JiraIssue createIssueCreationRequest(final JiraEventNotificationConfig config,
-            final Map<String, Object> model) {
-        model.put("graylog_url", config.graylogURL());
+                                                 final EventNotificationModelData model,
+                                                 final Map<String, Object> templateData) {
+        final String issueDesc = buildMessage(config.issueDescription(), templateData);
+
+        String messageHash = createMessageHash(config, model, issueDesc);
+
         return new JiraIssue(
-                config.projectKey(),
-                buildMessage(config.issueSummary(), model),
-                buildMessage(config.issueDescription(), model),
-                config.issueType(),
-                config.issueAssigneeName(),
-                config.issuePriority(),
-                parseDelimitedValues(config.issueLabels()),
-                parseDelimitedValues(config.issueComponents()),
-                config.issueEnvironment(),
-                parseGraylogHashField(config.searchGraylogHashField())[0],
-                config.searchGraylogHashRegex(),
-                parseMapValues(config.issueCustomFields())
+            config.projectKey(),
+            buildMessage(config.issueSummary(), templateData),
+            issueDesc,
+            config.issueType(),
+            config.issueAssigneeName(),
+            config.issuePriority(),
+            parseDelimitedValues(config.issueLabels()),
+            parseDelimitedValues(config.issueComponents()),
+            config.issueEnvironment(),
+            parseJiraField(config.searchGraylogHashJiraField())[0],
+            messageHash,
+            parseMapValues(config.issueCustomFields())
         );
+    }
+
+    public String createMessageHash(JiraEventNotificationConfig config, EventNotificationModelData model, String issueDesc) {
+        if (Strings.isNullOrEmpty(config.searchGraylogHashJiraField())) {
+            return null;
+        }
+        String valueForHash = null;
+        if (config.searchGraylogHashField() != null) {
+            final String msgHash = model.backlog().stream()
+                .findFirst()
+                .map(ms -> ms.getField(config.searchGraylogHashField()))
+                .map(Object::toString)
+                .orElse(null);
+            if (!Strings.isNullOrEmpty(msgHash)) {
+                return msgHash;
+            }
+        } else if (config.searchGraylogHashRegex() != null) {
+            valueForHash = extractValueForHash(config.searchGraylogHashRegex(), issueDesc);
+        }
+
+        if (Strings.isNullOrEmpty(valueForHash)) {
+            valueForHash = issueDesc; // use whole description since hash is required
+        }
+        if (valueForHash.isBlank()) {
+            return null;
+        }
+
+        return calculateHash(valueForHash);
+    }
+
+    public String extractValueForHash(String graylogHashRegex, String description) {
+        final Pattern pattern = Pattern.compile(graylogHashRegex);
+        final Matcher matcher = pattern.matcher(description);
+
+        final StringBuilder sb = new StringBuilder();
+        if (matcher.find()) {
+            int i = 0;
+            do {
+                sb.append(matcher.group(i++));
+            } while (i < matcher.groupCount());
+        }
+        return !sb.isEmpty() ? sb.toString() : null;
+    }
+
+    public static String calculateHash(String text) {
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(text.getBytes(StandardCharsets.UTF_8));
+            return DatatypeConverter.printHexBinary(md.digest());
+        } catch (final NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Failed to create message hash", e);
+        }
     }
 
     private Proxy buildProxy(final String proxyURL) {
@@ -218,7 +284,7 @@ public class JiraClient {
             final URI uri = new URI(proxyURL);
             return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(uri.getHost(), uri.getPort()));
         } catch (final URISyntaxException e) {
-            throw new JiraClientException("Proxy URL is invalid format. Proxy URL=" + proxyURL, e);
+            throw new JiraClientException("Proxy URL is in invalid format. Proxy URL=" + proxyURL, e);
         }
     }
 
@@ -242,14 +308,14 @@ public class JiraClient {
     /**
      * @return array of custom field id and it's name
      */
-    private String[] parseGraylogHashField(final String graylogHashField) {
-        if (Strings.isNullOrEmpty(graylogHashField)) {
+    private String[] parseJiraField(final String jiraField) {
+        if (Strings.isNullOrEmpty(jiraField)) {
             return new String[] {"", ""};
         }
-        if (!graylogHashField.contains("=")) {
-            throw new JiraClientException("Graylog hash field is incorrectly formed.");
+        if (!jiraField.contains("=")) {
+            throw new JiraClientException("Jira field is incorrectly formed. Expected '{id}={name}'");
         }
-        return graylogHashField.split("=", 2);
+        return jiraField.split("=", 2);
     }
 
     private Map<String, String> parseMapValues(final String mapString) {

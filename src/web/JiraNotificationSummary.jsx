@@ -81,7 +81,11 @@ class JiraNotificationSummary extends React.Component {
             <td>{notification.config.issue_description}</td>
           </tr>
           <tr>
-            <td>Search for duplicate issues custom field</td>
+            <td>Search for duplicate issues custom Jira field</td>
+            <td>{notification.config.search_graylog_hash_jira_field}</td>
+          </tr>
+          <tr>
+            <td>Search for duplicate issues custom Graylog field</td>
             <td>{notification.config.search_graylog_hash_field}</td>
           </tr>
           <tr>
