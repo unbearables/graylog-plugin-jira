@@ -247,17 +247,30 @@ class JiraNotificationForm extends React.Component {
         <h3>Duplicate issue handling</h3>
         <br/>
         <FormGroup
+          controlId="notification-search-graylog-hash-jira-field"
+          validationState={this.getValidationState(validationErrors, "search_graylog_hash_jira_field")}
+        >
+          <ControlLabel>Search for duplicate issues custom Jira field <small class="text-muted">(Optional)</small></ControlLabel>
+          <FormControl
+            name="search_graylog_hash_jira_field"
+            type="text"
+            value={config.search_graylog_hash_jira_field || ""}
+            onChange={this.handleChange}
+          />
+          <HelpBlock>Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off duplicate searching.</HelpBlock>
+        </FormGroup>
+        <FormGroup
           controlId="notification-search-graylog-hash-field"
           validationState={this.getValidationState(validationErrors, "search_graylog_hash_field")}
         >
-          <ControlLabel>Search for duplicate issues custom field <small class="text-muted">(Optional)</small></ControlLabel>
+          <ControlLabel>Search for duplicate issues custom Graylog field <small class="text-muted">(Optional)</small></ControlLabel>
           <FormControl
             name="search_graylog_hash_field"
             type="text"
             value={config.search_graylog_hash_field || ""}
             onChange={this.handleChange}
           />
-          <HelpBlock>Pair value custom field id to it's name in GUI e.g. 'customfield_123=Graylog hash'. Leave blank to turn off duplicate searching.</HelpBlock>
+          <HelpBlock>Graylog field name with already calculated hash. Preferred way to get hash. Algorithm checks this first, after that regex is evaluated, if needed.</HelpBlock>
         </FormGroup>
         <FormGroup
           controlId="notification-search-graylog-hash-regex"
@@ -270,7 +283,7 @@ class JiraNotificationForm extends React.Component {
             value={config.search_graylog_hash_regex || ""}
             onChange={this.handleChange}
           />
-          <HelpBlock>Regex for extracting part of issue description, which can be used to detect duplicate issues. If absent and graylog hash field is filled, then whole description will be used.</HelpBlock>
+          <HelpBlock>Regex for extracting part of issue description, which can be used to detect duplicate issues. Extracted value is hashed via MD5. If absent and Jira hash field is filled, then whole description will be used.</HelpBlock>
         </FormGroup>
         <FormGroup
           controlId="notification-search-filter-jql"

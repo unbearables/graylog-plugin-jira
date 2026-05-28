@@ -49,6 +49,7 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     public static final String FIELD_ISSUE_CUSTOM_FIELDS = "issue_custom_fields";
     public static final String FIELD_ISSUE_SUMMARY = "issue_summary";
     public static final String FIELD_ISSUE_DESCRIPTION = "issue_description";
+    public static final String FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD = "search_graylog_hash_jira_field";
     public static final String FIELD_SEARCH_GRAYLOG_HASH_FIELD = "search_graylog_hash_field";
     public static final String FIELD_SEARCH_GRAYLOG_HASH_REGEX = "search_graylog_hash_regex";
     public static final String FIELD_SEARCH_FILTER_JQL = "search_filter_jql";
@@ -142,6 +143,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     @NotBlank
     public abstract String issueDescription();
 
+    @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD)
+    public abstract String searchGraylogHashJiraField();
+
     @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
     public abstract String searchGraylogHashField();
 
@@ -199,8 +203,8 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         if (issueDescription().isEmpty()) {
             validation.addError(FIELD_ISSUE_DESCRIPTION, FIELD_ISSUE_DESCRIPTION + " cannot be empty.");
         }
-        if (!searchGraylogHashField().isEmpty() && !searchGraylogHashField().contains("=")) {
-            validation.addError(FIELD_SEARCH_GRAYLOG_HASH_FIELD, FIELD_SEARCH_GRAYLOG_HASH_FIELD + " is incorrectly filled.");
+        if (!searchGraylogHashJiraField().isEmpty() && !searchGraylogHashJiraField().contains("=")) {
+            validation.addError(FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD, FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD + " is incorrectly filled.");
         }
         if (!searchGraylogHashRegex().isEmpty()) {
             try {
@@ -219,21 +223,22 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonCreator
         public static Builder create() {
             return new AutoValue_JiraEventNotificationConfig.Builder()
-                    .type(TYPE_NAME)
-                    .proxyURL("")
-                    .graylogURL("")
-                    .issueAssigneeName("")
-                    .issuePriority("")
-                    .issueLabels("")
-                    .issueComponents("")
-                    .issueEnvironment("")
-                    .issueCustomFields("")
-                    .issueSummary(DEFAULT_ISSUE_SUMMARY)
-                    .issueDescription(DEFAULT_ISSUE_DESCRIPTION)
-                    .searchGraylogHashField("")
-                    .searchGraylogHashRegex("")
-                    .searchFilterJQL("")
-                    .duplicateIssueComment("");
+                .type(TYPE_NAME)
+                .proxyURL("")
+                .graylogURL("")
+                .issueAssigneeName("")
+                .issuePriority("")
+                .issueLabels("")
+                .issueComponents("")
+                .issueEnvironment("")
+                .issueCustomFields("")
+                .issueSummary(DEFAULT_ISSUE_SUMMARY)
+                .issueDescription(DEFAULT_ISSUE_DESCRIPTION)
+                .searchGraylogHashJiraField("")
+                .searchGraylogHashField("")
+                .searchGraylogHashRegex("")
+                .searchFilterJQL("")
+                .duplicateIssueComment("");
         }
 
         @JsonProperty(FIELD_JIRA_URL)
@@ -281,6 +286,9 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
         @JsonProperty(FIELD_ISSUE_DESCRIPTION)
         public abstract Builder issueDescription(String issueDescription);
 
+        @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD)
+        public abstract Builder searchGraylogHashJiraField(String searchGraylogHashJiraField);
+
         @JsonProperty(FIELD_SEARCH_GRAYLOG_HASH_FIELD)
         public abstract Builder searchGraylogHashField(String searchGraylogHashField);
 
@@ -299,26 +307,27 @@ public abstract class JiraEventNotificationConfig implements EventNotificationCo
     @Override
     public EventNotificationConfigEntity toContentPackEntity(final EntityDescriptorIds entityDescriptorIds) {
         return JiraEventNotificationConfigEntity.builder()
-                .jiraURL(ValueReference.of(jiraURL()))
-                .proxyURL(ValueReference.of(proxyURL()))
-                .graylogURL(ValueReference.of(graylogURL()))
-                .credUsername(ValueReference.of(credUsername()))
-                .credPassword(ValueReference.of(credPassword()))
-                .projectKey(ValueReference.of(projectKey()))
-                .issueType(ValueReference.of(issueType()))
-                .issueAssigneeName(ValueReference.of(issueAssigneeName()))
-                .issuePriority(ValueReference.of(issuePriority()))
-                .issueLabels(ValueReference.of(issueLabels()))
-                .issueComponents(ValueReference.of(issueComponents()))
-                .issueEnvironment(ValueReference.of(issueEnvironment()))
-                .issueCustomFields(ValueReference.of(issueCustomFields()))
-                .issueSummary(ValueReference.of(issueSummary()))
-                .issueDescription(ValueReference.of(issueDescription()))
-                .searchGraylogHashField(ValueReference.of(searchGraylogHashField()))
-                .searchGraylogHashRegex(ValueReference.of(searchGraylogHashRegex()))
-                .searchFilterJQL(ValueReference.of(searchFilterJQL()))
-                .duplicateIssueComment(ValueReference.of(duplicateIssueComment()))
-                .build();
+            .jiraURL(ValueReference.of(jiraURL()))
+            .proxyURL(ValueReference.of(proxyURL()))
+            .graylogURL(ValueReference.of(graylogURL()))
+            .credUsername(ValueReference.of(credUsername()))
+            .credPassword(ValueReference.of(credPassword()))
+            .projectKey(ValueReference.of(projectKey()))
+            .issueType(ValueReference.of(issueType()))
+            .issueAssigneeName(ValueReference.of(issueAssigneeName()))
+            .issuePriority(ValueReference.of(issuePriority()))
+            .issueLabels(ValueReference.of(issueLabels()))
+            .issueComponents(ValueReference.of(issueComponents()))
+            .issueEnvironment(ValueReference.of(issueEnvironment()))
+            .issueCustomFields(ValueReference.of(issueCustomFields()))
+            .issueSummary(ValueReference.of(issueSummary()))
+            .issueDescription(ValueReference.of(issueDescription()))
+            .searchGraylogHashJiraField(ValueReference.of(searchGraylogHashJiraField()))
+            .searchGraylogHashField(ValueReference.of(searchGraylogHashField()))
+            .searchGraylogHashRegex(ValueReference.of(searchGraylogHashRegex()))
+            .searchFilterJQL(ValueReference.of(searchFilterJQL()))
+            .duplicateIssueComment(ValueReference.of(duplicateIssueComment()))
+            .build();
     }
 
     private boolean validURL(final String uri) {

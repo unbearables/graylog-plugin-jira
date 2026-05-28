@@ -50,8 +50,11 @@ const JiraNotificationDetails = ({ notification }) => {
       { notification.config.issue_description
         ? <ReadOnlyFormGroup label="JIRA Issue description" value={notification.config.issue_description} />
         : null}
+      { notification.config.search_graylog_hash_jira_field
+        ? <ReadOnlyFormGroup label="Search for duplicate issues custom Jira field" value={notification.config.search_graylog_hash_jira_field} />
+        : null}
       { notification.config.search_graylog_hash_field
-        ? <ReadOnlyFormGroup label="Search for duplicate issues custom field" value={notification.config.search_graylog_hash_field} />
+        ? <ReadOnlyFormGroup label="Search for duplicate issues Graylog field containg hash" value={notification.config.search_graylog_hash_field} />
         : null}
       { notification.config.search_graylog_hash_regex
         ? <ReadOnlyFormGroup label="Search for duplicate issues description regex" value={notification.config.search_graylog_hash_regex} />

@@ -71,6 +71,9 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_DESCRIPTION)
     public abstract ValueReference issueDescription();
 
+    @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD)
+    public abstract ValueReference searchGraylogHashJiraField();
+
     @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
     public abstract ValueReference searchGraylogHashField();
 
@@ -91,7 +94,7 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @AutoValue.Builder
-    public static abstract class Builder implements EventNotificationConfigEntity.Builder<Builder> {
+    public abstract static class Builder implements EventNotificationConfigEntity.Builder<Builder> {
 
         @JsonCreator
         public static Builder create() {
@@ -143,8 +146,11 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
         @JsonProperty(JiraEventNotificationConfig.FIELD_ISSUE_DESCRIPTION)
         public abstract Builder issueDescription(ValueReference issueDescription);
 
+        @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_JIRA_FIELD)
+        public abstract Builder searchGraylogHashJiraField(ValueReference searchGraylogHashJiraField);
+
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_FIELD)
-        public abstract Builder searchGraylogHashField(ValueReference searchGraylogHashFieldName);
+        public abstract Builder searchGraylogHashField(ValueReference searchGraylogHashField);
 
         @JsonProperty(JiraEventNotificationConfig.FIELD_SEARCH_GRAYLOG_HASH_REGEX)
         public abstract Builder searchGraylogHashRegex(ValueReference searchGraylogHashRegex);
@@ -162,25 +168,26 @@ public abstract class JiraEventNotificationConfigEntity implements EventNotifica
     public EventNotificationConfig toNativeEntity(Map<String, ValueReference> parameters,
                                                   Map<EntityDescriptor, Object> nativeEntities) {
         return JiraEventNotificationConfig.builder()
-                .jiraURL(jiraURL().asString(parameters))
-                .proxyURL(proxyURL().asString(parameters))
-                .graylogURL(graylogURL().asString(parameters))
-                .credUsername(credUsername().asString(parameters))
-                .credPassword(credPassword().asString(parameters))
-                .projectKey(projectKey().asString(parameters))
-                .issueType(issueType().asString(parameters))
-                .issueAssigneeName(issueAssigneeName().asString(parameters))
-                .issuePriority(issuePriority().asString(parameters))
-                .issueLabels(issueLabels().asString(parameters))
-                .issueComponents(issueComponents().asString(parameters))
-                .issueEnvironment(issueEnvironment().asString(parameters))
-                .issueCustomFields(issueCustomFields().asString(parameters))
-                .issueSummary(issueSummary().asString(parameters))
-                .issueDescription(issueDescription().asString(parameters))
-                .searchGraylogHashField(searchGraylogHashField().asString(parameters))
-                .searchGraylogHashRegex(searchGraylogHashRegex().asString(parameters))
-                .searchFilterJQL(searchFilterJQL().asString(parameters))
-                .duplicateIssueComment(duplicateIssueComment().asString(parameters))
-                .build();
+            .jiraURL(jiraURL().asString(parameters))
+            .proxyURL(proxyURL().asString(parameters))
+            .graylogURL(graylogURL().asString(parameters))
+            .credUsername(credUsername().asString(parameters))
+            .credPassword(credPassword().asString(parameters))
+            .projectKey(projectKey().asString(parameters))
+            .issueType(issueType().asString(parameters))
+            .issueAssigneeName(issueAssigneeName().asString(parameters))
+            .issuePriority(issuePriority().asString(parameters))
+            .issueLabels(issueLabels().asString(parameters))
+            .issueComponents(issueComponents().asString(parameters))
+            .issueEnvironment(issueEnvironment().asString(parameters))
+            .issueCustomFields(issueCustomFields().asString(parameters))
+            .issueSummary(issueSummary().asString(parameters))
+            .issueDescription(issueDescription().asString(parameters))
+            .searchGraylogHashJiraField(searchGraylogHashJiraField().asString(parameters))
+            .searchGraylogHashField(searchGraylogHashField().asString(parameters))
+            .searchGraylogHashRegex(searchGraylogHashRegex().asString(parameters))
+            .searchFilterJQL(searchFilterJQL().asString(parameters))
+            .duplicateIssueComment(duplicateIssueComment().asString(parameters))
+            .build();
     }
 }
