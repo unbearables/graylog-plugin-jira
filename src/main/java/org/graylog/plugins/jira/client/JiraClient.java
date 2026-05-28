@@ -231,7 +231,6 @@ public class JiraClient {
         if (Strings.isNullOrEmpty(config.searchGraylogHashJiraField())) {
             return null;
         }
-        String valueForHash = null;
         if (config.searchGraylogHashField() != null) {
             final String msgHash = model.backlog().stream()
                 .findFirst()
@@ -241,7 +240,9 @@ public class JiraClient {
             if (!Strings.isNullOrEmpty(msgHash)) {
                 return msgHash;
             }
-        } else if (config.searchGraylogHashRegex() != null) {
+        }
+        String valueForHash = null;
+        if (config.searchGraylogHashRegex() != null) {
             valueForHash = extractValueForHash(config.searchGraylogHashRegex(), issueDesc);
         }
 
