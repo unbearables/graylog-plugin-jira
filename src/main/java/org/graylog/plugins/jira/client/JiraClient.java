@@ -125,7 +125,7 @@ public class JiraClient {
                                            final JiraIssue jiraIssue) {
         final String jql = "project = " + config.projectKey()
                            + (Strings.isNullOrEmpty(config.searchFilterJQL()) ? " " : " " + config.searchFilterJQL() + " ")
-                           + "AND \"" + parseJiraField(config.searchGraylogHashField())[1]
+                           + "AND \"" + parseJiraField(config.searchGraylogHashJiraField())[1]
                            + "\" ~ \"" + jiraIssue.getMessageHash() + "\"";
 
         final HttpUrl url = constructURL(config.jiraURL(), "rest/api/2/search").newBuilder()
@@ -313,7 +313,7 @@ public class JiraClient {
             return new String[] {"", ""};
         }
         if (!jiraField.contains("=")) {
-            throw new JiraClientException("Jira field is incorrectly formed. Expected '{id}={name}'");
+            throw new JiraClientException("Jira field is incorrectly formed. Expected '{id}={name}', but got: '" + jiraField + "'");
         }
         return jiraField.split("=", 2);
     }
