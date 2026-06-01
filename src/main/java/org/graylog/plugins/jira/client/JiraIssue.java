@@ -1,8 +1,9 @@
 package org.graylog.plugins.jira.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+
+import org.graylog.plugins.jira.util.JsonUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class JiraIssue {
         customFields.forEach(params::putIfAbsent);
 
         try {
-            return new ObjectMapper().writeValueAsString(Map.of("fields", params));
+            return JsonUtil.writeValueAsString(Map.of("fields", params));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to build Jira issue payload as JSON format.", e);
         }

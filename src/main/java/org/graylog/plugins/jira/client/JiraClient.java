@@ -2,13 +2,13 @@ package org.graylog.plugins.jira.client;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.floreysoft.jmte.Engine;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
 import org.graylog.events.notifications.EventNotificationModelData;
 import org.graylog.plugins.jira.event.notifications.JiraEventNotificationConfig;
+import org.graylog.plugins.jira.util.JsonUtil;
 import org.graylog2.jackson.TypeReferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,6 @@ public class JiraClient {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private final Engine templateEngine;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     public JiraClient(final Engine engine) {
@@ -63,7 +62,7 @@ public class JiraClient {
         }
 
 
-        final Map<String, Object> templateData = objectMapper.convertValue(model, TypeReferences.MAP_STRING_OBJECT);
+        final Map<String, Object> templateData = JsonUtil.convertValue(model, TypeReferences.MAP_STRING_OBJECT);
         templateData.put("graylog_url", config.graylogURL());
         final JiraIssue jiraIssue = createIssueCreationRequest(config, model, templateData);
 
@@ -156,7 +155,7 @@ public class JiraClient {
                         + ", response=" + res.body().string());
             }
             final String jsonData = res.body().string();
-            final JsonNode issues = objectMapper.readValue(jsonData, JsonNode.class).get("issues");
+            final JsonNode issues = JsonUtil.readValue(jsonData, JsonNode.class).get("issues");
             if (issues != null && issues.isArray() && !issues.isEmpty()) {
                 return issues.get(0).get("id").textValue();
             }
